@@ -1,23 +1,16 @@
 FROM debian:buster-slim
 MAINTAINER rawdlite@gmail.com
+MAINTAINER Steven Saus (steven@faithcollapsing.com)
 
 ARG ROMPR_VERSION=1.33
-# Install packages
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update && \
-  apt-get -y install \
-      nginx \
-      php-fpm \
-      curl \
-      php-mysql \
-      php-curl \
-      php-gd \
-      unzip \
-      imagemagick \
-      php-json \
-      php-xml \ 
-      php-mbstring \
-      php-sqlite3 
+
+# Install packages
+RUN apt-get update -y && \
+    apt-get install -y curl mpd mpdscribble mpc detox snapclient wc bc \
+    nginx php-fpm php-mysql php-curl php-gd unzip imagemagick \
+    php-json php-xml php-mbstring php-sqlite3 icecast && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN curl -k -L -o rompr.zip https://github.com/fatg3erman/RompR/releases/download/${ROMPR_VERSION}/rompr-${ROMPR_VERSION}.zip
 RUN mkdir -p /app
@@ -43,4 +36,3 @@ COPY run-httpd /usr/local/bin/
 RUN chmod 755 /usr/local/bin/run-httpd
 EXPOSE 80
 CMD ["/usr/local/bin/run-httpd"]
-

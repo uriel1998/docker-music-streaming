@@ -2,6 +2,9 @@
 docker-rompr
 =================
 
+I'm working to add streaming and mpdq to this; NOT production ready AT ALL
+
+
 Docker Container to run a Rompr (https://fatg3erman.github.io/RompR/) instance.
 
 The Image is a multi-platform build for armv7 (Raspberry Pi, Odroid etc.) and x86 achitecture (amd64).
