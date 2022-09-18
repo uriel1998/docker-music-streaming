@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  apache:
+    image: local/apache2_php7.4
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: apache
+    ports:
+      - "8004:80"
+    restart: always
+    volumes:
+      - ./apache-sites/:/etc/apache2/sites-available/
+      - ./www:/var/www/
+      - ./logs:/var/logs/apache2/
