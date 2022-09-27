@@ -8,9 +8,8 @@ services:
       dockerfile: ./Dockerfile
     container_name: apache
     ports:
-      - "8004:80"
+      - "8180:80"
     restart: always
     volumes:
       - ./apache-sites/:/etc/apache2/sites-available/
       - ./www:/var/www/
-      - ./logs:/var/logs/apache2/

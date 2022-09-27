@@ -1,189 +1,133 @@
-[![](https://images.microbadger.com/badges/image/rawdlite/rompr.svg)](https://microbadger.com/images/rawdlite/rompr "Get your own image badge on microbadger.com")
-docker-rompr
-=================
+# docker-apache2-php7_4
 
-I'm working to add streaming and mpdq to this; NOT production ready AT ALL
+A way to get php7.4 running by using a Docker container as a proxy that *should* 
+be able to drop in behind your reverse proxy with (potentially) as little 
+configuration as moving a configuration file, making a symbolic link, and 
+typing `docker-compose up -d --build`.
 
+## Contents
+ 1. [About](#1-about)
+ 2. [License](#2-license)
+ 3. [Prerequisites](#3-prerequisites)
+ 4. [Installation](#4-Installation)
+ 5. [Notes](#5-Notes)
 
-Docker Container to run a Rompr (https://fatg3erman.github.io/RompR/) instance.
+***
 
-The Image is a multi-platform build for armv7 (Raspberry Pi, Odroid etc.) and x86 achitecture (amd64).
-The Image uses now debian:buster-slim and nginx.
+## 1. About
 
-Credit
-------
+I was not prepared to have something like half the web applications I have 
+running on my home lab to pooch it when Debian upgraded PHP from 7.4 to 8.1. 
 
-This work is based on Rompr by fatg3rman and a fork of tutumcloud/lamp
+Yes, I was running a lot of them on "bare metal" - that is, they were not 
+inside containers.
 
-Usage docker
-------------
-The easiest way to get a rompr instance running is:
+While I was able to find either upgraded versions or replacement programs, I 
+realized there had to be another way that would just let me get a bunch of 
+those web applications back up and running quickly.
 
-	docker run -d -p 80:80 --name rompr rawdlite/rompr
+Most of those sites were already running behind a reverse proxy anyway. So, I 
+asked myself, what if I learned how to run Apache and PHP 7.4 inside *Docker*, 
+and allowed my "main" bare metal setup to follow Debian's upgrade path? 
 
+This is the result.
 
-Usage docker-compose
----------------------------------
-With docker-compose you you can set up a set of containers and a network that connects them.
-For a full installation of mopidy, rompr and a full rompr datatabase (mysql)
-create a docker-compose.yml like so:
+The container, which is based on Debian bullseye-slim, will load any sites 
+configured in the `apache-sites` subdirectory, and serve files in the `www` 
+subdirectory. It is accessible on port 8180 by default.
 
+## 2. License
 
-	version: "3"
-	services:
-	  mopidy:
-	    image: rawdlite/mopidy
-	    container_name: mopidy
-	    devices:
-	      - "/dev/snd"
-	    ports:
-	      - "6600:6600"
-	      - "6680:6680"
-	    restart: always
-	    volumes:
-	      - ~/.config/:/root/.config/
-	      - /data/music/:/data/music/
-          mysql:
-            image: linuxserver/mariadb
-            restart: unless-stopped
-            container_name: mysql
-            environment:
-              - PUID=1000
-              - PGID=1000
-              - MYSQL_ROOT_PASSWORD=b4FUk4mF>3As3aA
-              - TZ=Europe/Berlin
-              - MYSQL_DATABASE=romprdb
-              - MYSQL_USER=rompr
-              - MYSQL_PASSWORD=romprdbpass
-            volumes:
-              - ./db_config:/config
-            ports:
-              - "3306:3306"
-	  rompr:
-	    image: rawdlite/rompr
-	    container_name: rompr
-	    restart: always
-	    ports:
-	      - "80:80"
+This project is licensed under the Apache License. For the full license, see `LICENSE`.
 
+## 3. Prerequisites
 
+This setup is *explicitly* meant to be run behind a reverse proxy, on a LAN that 
+has a firewall at the router level. **Particularly** if you hook into the databases 
+you had been running on the host.
 
-You need to change at least the volume pathes to reflect your system.
-then run:
+Handling things like certificates should be done at the level of your reverse 
+proxy.
 
-	docker-compose up -d
+Obviously, you need Docker. 
 
+## 4. Installation
 
-Using sqlite or a local MySQL Instance
-------------------------------------------
+1. Clone or download this repository.
 
-You can configure Rompr to use the Lite Database Collection (sqlite)
-then you need no mysql container.  
-Create a docker-compose.yml without the db container
+2. Move (from an existing Apache installation) or create configuration files for
+each of the websites to serve into the subdirectory `apache-sites`. 
 
+3. Make sure each of the Virtual Hosts is listening on *port 80*, e.g. `<VirtualHost *:80>`.
 
-	version: "3"
-	services:
-	  mopidy:
-	    image: rawdlite/mopidy
-	    container_name: mopidy
-	    devices:
-	      - "/dev/snd"
-	    ports:
-	      - "6600:6600"
-	      - "6680:6680"
-	    restart: always
-	    volumes:
-	      - ~/.config/:/root/.config/
-	      - /data/music/:/data/music/
-	  rompr:
-	    image: rawdlite/rompr_apache
-	    container_name: rompr
-	    restart: always
-	    ports:
-	      - "80:80"
+4. Put the contents of the websites into the subdirectory `www`. Symbolic links 
+*should* work. The subdirectory `www` will be equivalent to `/var/www` inside the 
+container.
 
+5. Examine the tweaks to php.ini and modules loaded in Apache in `/build/run_httpd.sh`. 
+If you wish to change these after the initial build, you will need to re-build 
+the image (`docker-compose up --build -d`) instead of just bringing it up.
 
+6. Bring up the container with `docker-compose up -d --build`. If you want to be 
+difficult on yourself, see the `build.sh` and `run.sh` scripts.
 
-Configuring ROMPR instance
-------------------------------
+7. Change the relevant proxy port for the reverse proxy to 8180. The specifics 
+will vary depending on what your reverse proxy is. For example, if you're using 
+nginx, the relevant *portion* of the config should look something like this:
 
-Open rompr in your Browser:
+```
+   location / {
+   include errorpages.conf;
+   proxy_pass http://192.168.1.101:8180;
+   proxy_set_header X-Real-IP $remote_addr;
+   proxy_set_header Host $host;
+   }
+```
 
-	http://localhost/
+## 5. Notes
 
-Hello Rompr!
+* Add additional mounts (e.g. for a music directory, and so on) to docker-compose.yaml
+as needed. For example, to mount /media/music to /var/music inside the container, 
+add the line `      - ./media/music:/var/music/` at the bottom of `docker-compose.yaml.`
 
-When you see the rompr setup screen
+* Note that you will probably have to change ownership on the served directories
+(or at least some of them) to www-data:www-data (or 33:33), which is the UID/GID for 
+apache on debian
 
-	Mopidy or mpd Server: mopidy
-	Port: 6600
+* You may wish to also chmod to 6777 to preserve GID/UID of files written there.
+chmod g+s ./ 
 
-for rompr_db container:
+* If you need to change the sites that are served, you will need to bring the 
+container down and back up again. There is no need to re-build the image in 
+order to add or remove sites served by the container.
 
-	Server: mysql
-	Port: 3360
-	Database: romprdb
-	Username: rompr
-  Password: <MYSQL_PASSWORD>
+* It is very likely that you will need to change the permissions for the `www` 
+subdirectory to be owned by `www-data`, which is the user for Apache in Debian. The 
+UID and GID for user `www-data` are `33`, so you can set the permissions by 
+typing 
 
-Use Password from from docker-compose.yml.
+`sudo chown -R 33:33 /the/full/path/to/www`
 
-Select 'Full Database Collection'.
-Hit 'OK'
+### Connecting to MySQL (and presumably other databases) On The Host
 
+There are several steps you will need to take in order to let web applications 
+talk to a database server running on the host. 
 
-Local Mysql Instance
---------------------
-You might already have mysql Instance running on your host.
-To use this you need to find the Host IP for docker Network
-run:
+* Firewall - make sure your firewall allows from the docker IP ranges as well. Those 
+are usually 172.*.*.*/16. You can find out the IP address of a running Docker 
+process through `docker inspect [container ID] | grep IPAddress`. The less 
+secure way - but significantly easier - is to allow access to port 3306 
+(e.g., `sudo ufw allow in to any port 3306`) while blocking port access at 
+your router's firewall.
 
-        ip addr
+* If you're connecting to an existing database on the host, make sure the 
+*DATABASE* permissions allow for the user to not be on "localhost". Note the '%' 
+modifier, e.g. 
 
-Find an entry like:
+```
+CREATE USER 'myuser'@'%' IDENTIFIED BY 'mycomplicatedpassword';
+GRANT ALL PRIVILEGES ON mydb.* TO 'myuser'@'%';
+```
 
-	docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
-    	inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
-
-Here the required ip is 172.17.0.1 (like mostly)
-In the rompr configuration enter.
-
-        Server: 172.17.0.1
-
-Database and user need to be created in your local DB.
-
-Bind to another port
------------------------------
-If you want to use a mysql container and have a local mysql instance at the same time, you ned to change the ports like so:
-
-      ports:
-        - "33060:3306"
-
-the port 33060 then needs to be entered in the rompr setup.
-
-In case you already have a webserver running under port 80 on your host you can bind an alternative port like 8080
-
-	docker run -d -p 8080:80 rawdlite/rompr
-
-Open in your Browser:
-
-        http://localhost:8080
-
-Debug
-=====
-
-Check php variables:
-
-       http://localhost/phpinfo.php
-
-Entering the container
--------------------------------
-
-Get the container name or id
-
-	docker ps
-
-run a shell in the container
-
-	docker exec -it rompr /bin/bash
+* Note that you may have to change the addresses that MySQL will bind to as well, 
+following these instructions from [StackOverflow](https://stackoverflow.com/questions/16287559/mysql-adding-user-for-remote-access#37341046).

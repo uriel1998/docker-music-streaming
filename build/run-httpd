@@ -1,0 +1,79 @@
+#!/bin/bash
+  
+##############################################################################
+# run-httpd, by Steven Saus 20 Sep 2022
+#
+# For setting up and running the Apache webserver inside a Docker container.
+#
+# steven@faithcollapsing.com
+# Licensed under the Apache License
+##############################################################################  
+
+set -e
+
+# remove all sites enabled
+rm -rf /etc/apache2/sites-enabled/*
+# symlink everything in sites available (which is bound to outside the container)
+sites=$(ls -A "/etc/apache2/sites-available")
+
+for site in $sites;do
+    a2ensite ${site%.*}
+done
+
+if [ ! -f /etc/php/7.4/myinit ];then 
+    ###############################################################################
+    # Environment variables to configure php
+    # Adjust as needed, then rebuild the container (docker-compose up --build)
+    ###############################################################################
+    sed -ri -e  's/^allow_url_fopen =.*/allow_url_fopen = On/g' /etc/php/7.4/fpm/php.ini
+    sed -ri -e  's/^memory_limit =.*/memory_limit = 512M/g' /etc/php/7.4/fpm/php.ini
+    sed -ri -e  's/^max_execution_time =.*/max_execution_time = 1800/g' /etc/php/7.4/fpm/php.ini
+    sed -ri -e  's/^post_max_size =.*/post_max_size = 256M/g' /etc/php/7.4/fpm/php.ini
+    sed -ri -e  's/^upload_max_filesize =.*/upload_max_filesize = 8M/g' /etc/php/7.4/fpm/php.ini
+    sed -ri -e  's/^max_file_uploads =.*/max_file_uploads = 50/g' /etc/php/7.4/fpm/php.ini
+    sed -ri -e  's/^display_errors =.*/display_errors = On/g' /etc/php/7.4/fpm/php.ini
+    sed -ri -e  's/^display_startup_errors =.*/display_startup_errors = On/g' /etc/php/7.4/fpm/php.ini
+
+    ###############################################################################
+    # Load apache mods and configurations. 
+    # Adjust as needed, then rebuild the container (docker-compose up --build)
+    ###############################################################################
+
+    update-rc.d php7.4-fpm defaults
+    a2enmod proxy_fcgi && \
+    a2enmod setenvif && \
+    a2enmod alias && \
+    a2enmod autoindex && \
+    a2enmod deflate && \
+    a2enmod dir && \
+    a2enmod mime && \
+    a2enmod mime_magic && \
+    a2enmod rewrite && \
+    a2enmod xml2enc && \
+    a2enmod actions && \
+    a2enmod auth_basic && \
+    a2enmod cgi && \
+    a2enmod expires && \
+    a2enmod headers && \
+    a2enmod proxy && \
+    a2enmod proxy_html && \
+    a2enmod proxy_http && \
+    a2enmod proxy_scgi && \
+    a2enmod proxy_wstunnel 
+
+    a2enconf php7.4-fpm && \
+    a2enconf charset && \
+    a2enconf javascript-common && \
+    a2enconf security && \
+    a2enconf serve-cgi-bin 
+
+    touch /etc/php/7.4/myinit
+fi
+
+###############################################################################
+# Restart php-fpm and apache. Apache needs to be started this way so that  
+# it stays in the foreground, otherwise Docker closes it down.
+###############################################################################
+
+/etc/init.d/php7.4-fpm restart
+apachectl -D FOREGROUND
