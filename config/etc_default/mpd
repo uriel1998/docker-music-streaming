@@ -6,4 +6,4 @@
 ## command 'systemctl disable mpd'.
 
 ## The configuration file location for mpd:
-# MPDCONF=/etc/mpd.conf
+MPDCONF=/etc/mpd.conf
