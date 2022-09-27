@@ -6,6 +6,7 @@
 - upnp server (?)
 - web interface
 - drop in behind proxy
+- music directory and configurations accessible from host (at least at spinup)
 
 
 A way to get php7.4 running by using a Docker container as a proxy that *should* 

@@ -6,6 +6,17 @@ ENV DEBIAN_FRONTEND noninteractive
 # Install packages
 RUN apt-get update -y && \
     apt-get install -y curl \
+    mpd \
+    minidlna \
+    mpdscribble \
+    mpc \
+    detox \
+    snapclient \
+    wc \
+    bc \
+    unzip \
+    imagemagick \
+    icecast \
     libapache2-mod-php7.4 \
     libphp7.4-embed \
     php7.4 \
