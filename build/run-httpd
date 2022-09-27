@@ -70,6 +70,10 @@ if [ ! -f /etc/php/7.4/myinit ];then
     touch /etc/php/7.4/myinit
 fi
 
+# TODO 
+# - setups for icecast, mpdscribble, mpd, snapserver, minidlna copy into 
+# - setup rompr if needed (or should user do that? probably user, right?)
+
 ###############################################################################
 # Restart php-fpm and apache. Apache needs to be started this way so that  
 # it stays in the foreground, otherwise Docker closes it down.
