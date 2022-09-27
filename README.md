@@ -1,4 +1,12 @@
-# docker-apache2-php7_4
+# docker-music-streaming
+
+- mpd
+- icecast
+- snapcast
+- upnp server (?)
+- web interface
+- drop in behind proxy
+
 
 A way to get php7.4 running by using a Docker container as a proxy that *should* 
 be able to drop in behind your reverse proxy with (potentially) as little 
