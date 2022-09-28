@@ -14,6 +14,11 @@ RUN apt-get update -y && \
     snapclient \
     avahi-daemon \
     libnss-mdns \
+    shuf \
+    grep \
+    mp3info \
+    exiftool \
+    ffmpeg \   
     wc \
     bc \
     unzip \

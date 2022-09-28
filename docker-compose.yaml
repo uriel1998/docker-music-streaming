@@ -16,6 +16,8 @@ services:
       :6600
       # minidlna
       :8200
+      #snapserver
+      :1780
 
     restart: always
     volumes:

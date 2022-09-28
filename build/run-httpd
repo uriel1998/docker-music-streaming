@@ -31,9 +31,18 @@ set -e
 # snapcast
 #
 ##############################################################################
-
-
-
+if [ -f /media/config/mpd.conf ];then 
+    cp -f /media/config/mpd.conf /etc
+if
+if [ -f /media/config/minidlna.conf ];then 
+    cp -f /media/config/minidlna.conf /etc
+if
+if [ -f /media/config/snapserver.conf ];then 
+    cp -f /media/config/snapserver.conf /etc
+if
+if [ -f /media/config/snapserver ];then 
+    cp -f /media/config/snapserver /etc/default
+if
 
 ##############################################################################
 #
