@@ -1,7 +1,6 @@
 # docker-music-streaming
 
 - mpd
-- icecast
 - snapcast
 - upnp server (?)
 - web interface

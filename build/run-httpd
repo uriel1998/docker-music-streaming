@@ -12,21 +12,9 @@
 set -e
 
 ##############################################################################
-
-
-
-# TODO 
-# - setups for mpdscribble, mpd, snapserver, minidlna copy into 
-# mpdq setup if config does not exist
-# - setup rompr if needed (or should user do that? probably user, right?)
-# switches for mpdq, minidlna, avahi, snapclient
-
-##############################################################################
 #
-# Compare modification times, copy into docker if file on host is newer.
+# Copy user configs into appropriate places in Docker container at spinup.
 # mpd.conf
-# mpdq.ini
-# defaults (for mpdq)
 # minidlna
 # snapcast
 #
@@ -43,6 +31,53 @@ if
 if [ -f /media/config/snapserver ];then 
     cp -f /media/config/snapserver /etc/default
 if
+
+# Start MPD
+
+# Start mpdscribble
+
+
+##############################################################################
+# For MPDQ setup
+##############################################################################
+# Define the two directories that MPDQ needs.
+ConfigDir=${XDG_CONFIG_HOME:-$HOME/.config}/mpdq
+if [ ! -d ${ConfigDir} ]; then
+    mkdir -p ${ConfigDir}
+fi
+ConfigFile=$ConfigDir/mpdq.ini
+
+StateDir=${XDG_STATE_HOME:-$HOME/.local/state}/mpdq
+if [ ! -d ${StateDir} ]; then
+    mkdir -p ${StateDir}
+fi
+
+# Copy in configurations.
+if [ -f /media/config/mpdq.ini ];then 
+    cp -f /media/config/mpdq.ini ${ConfigDir}
+if
+# The provided stub is an EXCLUSION type
+if [ -f /media/config/default.cfg ];then 
+    cp -f /media/config/default.cfg ${ConfigDir}
+if
+# Copy OUT default example with updated genre list at spinup.
+if [ ! -f ${StateDir}/example_instruction_file
+    mpdq -e
+    cp -f ${StateDir}/example_instruction_file /media/config
+fi
+
+# Start mpdq
+
+
+##############################################################################
+#
+# Checking/fixing rompr permissions at spin up
+#
+##############################################################################
+if [ ! -d /var/www/rompr/albumart ];then
+    mkdir -p /var/www/rompr/{albumart,prefs}
+fi
+chown -R www-data:www-data /var/www/rompr/{albumart,prefs}
 
 ##############################################################################
 #
@@ -112,6 +147,8 @@ fi
 # Restart php-fpm and apache. Apache needs to be started this way so that  
 # it stays in the foreground, otherwise Docker closes it down.
 ###############################################################################
+
+
 
 /etc/init.d/php7.4-fpm restart
 apachectl -D FOREGROUND

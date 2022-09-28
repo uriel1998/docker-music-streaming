@@ -11,13 +11,17 @@ services:
     # web
       - "8180:80"
       # stream
-      :8000
+      - ":8000"
       # mpd control
-      :6600
+      - ":6600"
       # minidlna
-      :8200
+      - ":8200"
       #snapserver
-      :1780
+      - ":1704"
+      - ":1705"
+      - ":1780"
+      # avahi? Not sure if dbus mount is enough
+      - ":5353"
 
     restart: always
     volumes:
