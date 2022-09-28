@@ -84,7 +84,9 @@ fi
 if [ ! -d /var/www/rompr ];then 
     wget https://github.com/fatg3erman/RompR/releases/download/1.61/rompr-1.61.zip
 
+fi
 
+TODO SYNC PASSWORDS TO SOME SAME FAKE THING
 ##############################################################################
 # 
 #
