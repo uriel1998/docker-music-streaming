@@ -12,6 +12,8 @@ RUN apt-get update -y && \
     mpc \
     detox \
     snapclient \
+    avahi-daemon \
+    libnss-mdns \
     wc \
     bc \
     unzip \

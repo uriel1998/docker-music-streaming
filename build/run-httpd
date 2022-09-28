@@ -11,6 +11,36 @@
 
 set -e
 
+##############################################################################
+
+
+
+# TODO 
+# - setups for mpdscribble, mpd, snapserver, minidlna copy into 
+# mpdq setup if config does not exist
+# - setup rompr if needed (or should user do that? probably user, right?)
+# switches for mpdq, minidlna, avahi, snapclient
+
+##############################################################################
+#
+# Compare modification times, copy into docker if file on host is newer.
+# mpd.conf
+# mpdq.ini
+# defaults (for mpdq)
+# minidlna
+# snapcast
+#
+##############################################################################
+
+
+
+
+##############################################################################
+#
+# Apache site setup
+#
+##############################################################################
+
 # remove all sites enabled
 rm -rf /etc/apache2/sites-enabled/*
 # symlink everything in sites available (which is bound to outside the container)
@@ -38,7 +68,6 @@ if [ ! -f /etc/php/7.4/myinit ];then
     # Load apache mods and configurations. 
     # Adjust as needed, then rebuild the container (docker-compose up --build)
     ###############################################################################
-
     update-rc.d php7.4-fpm defaults
     a2enmod proxy_fcgi && \
     a2enmod setenvif && \
@@ -69,10 +98,6 @@ if [ ! -f /etc/php/7.4/myinit ];then
 
     touch /etc/php/7.4/myinit
 fi
-
-# TODO 
-# - setups for mpdscribble, mpd, snapserver, minidlna copy into 
-# - setup rompr if needed (or should user do that? probably user, right?)
 
 ###############################################################################
 # Restart php-fpm and apache. Apache needs to be started this way so that  

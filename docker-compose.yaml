@@ -8,8 +8,24 @@ services:
       dockerfile: ./Dockerfile
     container_name: apache
     ports:
+    # web
       - "8180:80"
+      # stream
+      :8000
+      # mpd control
+      :6600
+      # minidlna
+      :8200
+
     restart: always
     volumes:
-      - ./apache-sites/:/etc/apache2/sites-available/
+# straight up mounts
       - ./www:/var/www/
+      - ./music:/media/music/
+      - ./playlists:/media/playlists/
+# these will copy configs on startup
+      - ./config/apache-sites/:/etc/apache2/sites-available/
+      - ./config:/media/config/
+# for avahi    
+      - /var/run/dbus:/var/run/dbus 
+      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
