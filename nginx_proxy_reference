@@ -1,0 +1,13 @@
+server {
+    server_name example.com;
+    location /mpd.mp3 {
+        proxy_pass http://localhost:8881;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $host;     
+    }
+    location / {
+        proxy_pass http://192.168.1.101:8880;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $host;
+    }
+}

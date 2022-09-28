@@ -23,7 +23,6 @@ RUN apt-get update -y && \
     bc \
     unzip \
     imagemagick \
-    icecast \
     libapache2-mod-php7.4 \
     libphp7.4-embed \
     php7.4 \
@@ -67,6 +66,13 @@ COPY build/mods-available/ /etc/apache2/mods-available
 COPY build/run-httpd /usr/local/bin/
 RUN chmod 755 /usr/local/bin/run-httpd
 
-
 EXPOSE 80
+EXPOSE 8000
+EXPOSE 6600
+EXPOSE 8200
+EXPOSE 1704
+EXPOSE 1705
+EXPOSE 1780
+EXPOSE 5353
+
 CMD ["/usr/local/bin/run-httpd"]

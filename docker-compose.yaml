@@ -2,36 +2,26 @@ version: "3.9"
 
 services:
   apache:
-    image: local/apache2_php7.4
+    image: local/docker_mpd_streaming
     build:
       context: .
       dockerfile: ./Dockerfile
     container_name: apache
     ports:
-    # web
-      - "8180:80"
-      # stream
-      - ":8000"
-      # mpd control
-      - ":6600"
-      # minidlna
-      - ":8200"
-      #snapserver
-      - ":1704"
-      - ":1705"
-      - ":1780"
-      # avahi? Not sure if dbus mount is enough
-      - ":5353"
-
+      - "8880:80"    # web
+      - "8881:8000"  # stream - if you have something else using 8000, for example
+      - "8882:6600"  # mpd control - if you have another MPD locally
+      - "8200:8200"  # minidlna
+      - "1704:1704"  #snapserver
+      - "1705:1705"  #snapserver
+      - "1780:1780"  #snapserver
+      - "5353:5353"  # avahi? Not sure if dbus mount is enough
     restart: always
     volumes:
-# straight up mounts
-      - ./www:/var/www/
-      - ./music:/media/music/
-      - ./playlists:/media/playlists/
-# these will copy configs on startup
-      - ./config/apache-sites/:/etc/apache2/sites-available/
-      - ./config:/media/config/
-# for avahi    
-      - /var/run/dbus:/var/run/dbus 
-      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
+      - ./music:/media/music/  # your music, edit this.
+      - ./playlists:/media/playlists/  # your playlists
+      - ./www:/var/www/  # for rompr; leave this, it will be auto-installed.
+      - ./config/apache-sites/:/etc/apache2/sites-available/ # these will copy configs on startup
+      - ./config:/media/config/ # these will copy configs on startup
+      - /var/run/dbus:/var/run/dbus # for avahi to work  
+      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket # for avahi to work 

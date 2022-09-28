@@ -32,10 +32,17 @@ if [ -f /media/config/snapserver ];then
     cp -f /media/config/snapserver /etc/default
 if
 
+# TODO
+
+# Start avahi
+
 # Start MPD
 
 # Start mpdscribble
 
+# Start snapserver
+
+# start minidlna
 
 ##############################################################################
 # For MPDQ setup
@@ -67,7 +74,7 @@ if [ ! -f ${StateDir}/example_instruction_file
 fi
 
 # Start mpdq
-
+# TODO
 
 ##############################################################################
 #
