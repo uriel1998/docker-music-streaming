@@ -49,13 +49,14 @@ if
 ##############################################################################
 # 
 # download & install mpdq (if needed)
+# Yes, upgrading requires a rebuild.
 # 
-# https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
-# unzip master.zip
-# (puts in mpdq-master)
-#
-
-
+if [ ! -d /mpdq-master ];then
+    wget https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
+    unzip ./master.zip
+    rm ./master.zip
+fi
+    
 # Define the two directories that MPDQ needs.
 ConfigDir=${XDG_CONFIG_HOME:-$HOME/.config}/mpdq
 if [ ! -d ${ConfigDir} ]; then
@@ -78,7 +79,7 @@ if [ -f /media/config/default.cfg ];then
 if
 # Copy OUT default example with updated genre list at spinup.
 if [ ! -f ${StateDir}/example_instruction_file
-    mpdq -e
+    /mpdq-master/mpdq -e
     cp -f ${StateDir}/example_instruction_file /media/config
 fi
 
