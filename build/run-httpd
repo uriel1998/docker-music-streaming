@@ -21,25 +21,30 @@ set -e
 ##############################################################################
 if [ -f /media/config/mpd.conf ];then 
     cp -f /media/config/mpd.conf /etc
-if
+fi
 if [ -f /media/config/minidlna.conf ];then 
     cp -f /media/config/minidlna.conf /etc
-if
+fi
 if [ -f /media/config/snapserver.conf ];then 
     cp -f /media/config/snapserver.conf /etc
-if
+fi
 if [ -f /media/config/snapserver ];then 
     cp -f /media/config/snapserver /etc/default
-if
+fi
+
+export MPD_HOST=mycomplicatedpassword@localhost
+
+
+
 
 # TODO
 
 # Start avahi
 
 # Start MPD
-
+/usr/bin/mpd &
 # Start mpdscribble
-
+/usr/bin/mpdscribble &
 # Start snapserver
 
 # start minidlna
@@ -72,19 +77,20 @@ fi
 # Copy in configurations.
 if [ -f /media/config/mpdq.ini ];then 
     cp -f /media/config/mpdq.ini ${ConfigDir}
-if
+fi
 # The provided stub is an EXCLUSION type
 if [ -f /media/config/default.cfg ];then 
     cp -f /media/config/default.cfg ${ConfigDir}
-if
+fi
 # Copy OUT default example with updated genre list at spinup.
 if [ ! -f ${StateDir}/example_instruction_file
     /mpdq-master/mpdq -e
     cp -f ${StateDir}/example_instruction_file /media/config
 fi
 
-# Start mpdq
-# TODO
+if [ -f ${ConfigDir}/default.cfg ];then 
+    /mpdq-master/mpdq &
+fi
 
 ##############################################################################
 #
@@ -97,8 +103,6 @@ if [ ! -d /var/www/rompr ];then
     unzip rompr-1.61.zip
 fi
 
-export MPD_HOST=mycomplicatedpassword@localhost
-
 ##############################################################################
 # 
 #
@@ -108,6 +112,7 @@ export MPD_HOST=mycomplicatedpassword@localhost
 if [ ! -d /var/www/rompr/albumart ];then
     mkdir -p /var/www/rompr/{albumart,prefs}
 fi
+
 chown -R www-data:www-data /var/www/rompr/{albumart,prefs}
 
 ##############################################################################

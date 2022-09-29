@@ -11,11 +11,11 @@ services:
       - "8880:80"    # web
       - "8881:8000"  # stream - if you have something else using 8000, for example
       - "8882:6600"  # mpd control - if you have another MPD locally
-      - "8200:8200"  # minidlna
-      - "1704:1704"  #snapserver
-      - "1705:1705"  #snapserver
-      - "1780:1780"  #snapserver
-      - "5353:5353"  # avahi? Not sure if dbus mount is enough
+      #- "8200:8200"  # minidlna
+      #- "1704:1704"  #snapserver
+      #- "1705:1705"  #snapserver
+      #- "1780:1780"  #snapserver
+      #- "5353:5353"  # avahi? Not sure if dbus mount is enough
     restart: always
     volumes:
       - ./music:/media/music/  # your music, edit this.
