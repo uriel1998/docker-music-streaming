@@ -47,6 +47,15 @@ if
 ##############################################################################
 # For MPDQ setup
 ##############################################################################
+# 
+# download & install mpdq (if needed)
+# 
+# https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
+# unzip master.zip
+# (puts in mpdq-master)
+#
+
+
 # Define the two directories that MPDQ needs.
 ConfigDir=${XDG_CONFIG_HOME:-$HOME/.config}/mpdq
 if [ ! -d ${ConfigDir} ]; then
@@ -82,11 +91,13 @@ fi
 #
 ###############################################################################
 if [ ! -d /var/www/rompr ];then 
+    cd /var/www
     wget https://github.com/fatg3erman/RompR/releases/download/1.61/rompr-1.61.zip
-
+    unzip rompr-1.61.zip
 fi
 
-TODO SYNC PASSWORDS TO SOME SAME FAKE THING
+export MPD_HOST=mycomplicatedpassword@localhost
+
 ##############################################################################
 # 
 #
