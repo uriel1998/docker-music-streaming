@@ -63,8 +63,6 @@ RUN apt-get update -y && \
 RUN mkdir -p /run/php/ && mkdir -p /etc/apache2/{conf-available,mods-available}
 COPY build/conf-available/ /etc/apache2/conf-available
 COPY build/mods-available/ /etc/apache2/mods-available
-COPY build/run-httpd /usr/local/bin/
-RUN chmod 755 /usr/local/bin/run-httpd
 
 EXPOSE 80
 EXPOSE 8000
@@ -74,5 +72,8 @@ EXPOSE 1704
 EXPOSE 1705
 EXPOSE 1780
 EXPOSE 5353
+
+COPY build/run-httpd /usr/local/bin/
+RUN chmod 755 /usr/local/bin/run-httpd
 
 CMD ["/usr/local/bin/run-httpd"]

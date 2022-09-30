@@ -41,23 +41,23 @@ export MPD_HOST=mycomplicatedpassword@localhost
 # look in systemd files to see how they start them
 
 # Start avahi
-/usr/sbin/avahi-daemon -s
+#/usr/sbin/avahi-daemon -s
 #ExecReload=/usr/sbin/avahi-daemon -r
 
 # Start MPD
 #EnvironmentFile=/etc/default/mpd
-/usr/bin/mpd &
+#/usr/bin/mpd &
 
 # Start mpdscribble
-/usr/bin/mpdscribble 
+#/usr/bin/mpdscribble &
 
 # Start snapserver
-source /etc/default/snapserver
-/usr/bin/snapserver --logging.sink=system --server.datadir="${HOME}" $SNAPSERVER_OPTS
+#source /etc/default/snapserver
+#/usr/bin/snapserver --logging.sink=system --server.datadir="${HOME}" $SNAPSERVER_OPTS &
 # start minidlna
-/bin/mkdir -p /var/run/minidlna
-/bin/chown $USER /var/run/minidlna
-/usr/sbin/minidlnad -S
+#/bin/mkdir -p /var/run/minidlna
+#/bin/chown $USER /var/run/minidlna
+#/usr/sbin/minidlnad -S &
 
 ##############################################################################
 # For MPDQ setup
@@ -92,14 +92,16 @@ fi
 if [ -f /media/config/default.cfg ];then 
     cp -f /media/config/default.cfg ${ConfigDir}
 fi
+ /bin/bash
 # Copy OUT default example with updated genre list at spinup.
 if [ ! -f ${StateDir}/example_instruction_file ];then
     /mpdq-master/mpdq -e
+   
     cp -f ${StateDir}/example_instruction_file /media/config
 fi
 
 if [ -f ${ConfigDir}/default.cfg ];then 
-    /mpdq-master/mpdq &
+    #/mpdq-master/mpdq &
 fi
 
 ##############################################################################
@@ -197,4 +199,5 @@ fi
 
 
 /etc/init.d/php7.4-fpm restart
+
 apachectl -D FOREGROUND
