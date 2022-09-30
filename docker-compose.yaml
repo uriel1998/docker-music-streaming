@@ -6,7 +6,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    container_name: apache
+    container_name: mpd_streaming
     ports:
       - "8880:80"    # web
       - "8881:8000"  # stream - if you have something else using 8000, for example
