@@ -12,7 +12,7 @@ RUN apt-get update -y && \
     mpdscribble \
     mpc \
     detox \
-    snapclient \
+    snapserver \
     avahi-daemon \
     libnss-mdns \
     coreutils \

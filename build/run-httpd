@@ -11,6 +11,9 @@
 
 set -e
 
+export XDG_CONFIG_HOME=/usr/local/share
+export XDG_STATE_HOME=/usr/local/state
+
 ##############################################################################
 #
 # Copy user configs into appropriate places in Docker container at spinup.
@@ -35,25 +38,27 @@ fi
 export MPD_HOST=mycomplicatedpassword@localhost
 
 
-
-
 # TODO
 # look in systemd files to see how they start them
 
 # Start avahi
-#/usr/sbin/avahi-daemon -s
+/usr/sbin/avahi-daemon -s
 #ExecReload=/usr/sbin/avahi-daemon -r
 
 # Start MPD
 #EnvironmentFile=/etc/default/mpd
-#/usr/bin/mpd &
+echo "mpd"
+/usr/bin/mpd 
 
 # Start mpdscribble
-#/usr/bin/mpdscribble &
+echo "mpdscribble"
+/usr/bin/mpdscribble &
 
 # Start snapserver
-#source /etc/default/snapserver
-#/usr/bin/snapserver --logging.sink=system --server.datadir="${HOME}" $SNAPSERVER_OPTS &
+echo "snapserver"
+source /etc/default/snapserver
+mkdir -p ${XDG_STATE_HOME}/snapserver
+/usr/bin/snapserver --logging.sink=system --server.datadir="${XDG_STATE_HOME}/snapserver" $SNAPSERVER_OPTS &
 # start minidlna
 #/bin/mkdir -p /var/run/minidlna
 #/bin/chown $USER /var/run/minidlna
@@ -63,23 +68,27 @@ export MPD_HOST=mycomplicatedpassword@localhost
 # For MPDQ setup
 ##############################################################################
 # 
-# download & install mpdq (if needed)
+# download & install mpdq (if needed) using local archive first.
 # Yes, upgrading requires a rebuild.
 # 
 if [ ! -d /mpdq-master ];then
-    wget https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
-    unzip ./master.zip
-    rm ./master.zip
+    if [ -f /media/config/mpdq-master.zip ];then
+        unzip /media/config/mpdq-master.zip
+    else
+        wget https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
+        unzip ./master.zip
+        rm ./master.zip
+    fi
 fi
     
 # Define the two directories that MPDQ needs.
-export ConfigDir=${XDG_CONFIG_HOME:-$HOME/.config}/mpdq
+export ConfigDir=${XDG_CONFIG_HOME}/mpdq
 if [ ! -d ${ConfigDir} ]; then
     mkdir -p ${ConfigDir}
 fi
 ConfigFile=$ConfigDir/mpdq.ini
 
-export StateDir=${XDG_STATE_HOME:-$HOME/.local/state}/mpdq
+export StateDir=${XDG_STATE_HOME}/mpdq
 if [ ! -d ${StateDir} ]; then
     mkdir -p ${StateDir}
 fi
@@ -92,31 +101,40 @@ fi
 if [ -f /media/config/default.cfg ];then 
     cp -f /media/config/default.cfg ${ConfigDir}
 fi
- /bin/bash
+
 # Copy OUT default example with updated genre list at spinup.
 if [ ! -f ${StateDir}/example_instruction_file ];then
-    /mpdq-master/mpdq -e
-   
-    cp -f ${StateDir}/example_instruction_file /media/config
+    echo "Exporting example instruction file with list of genres."
+    /mpdq-master/mpdq -e 
+    cp -f ${StateDir}/example_instruction /media/config
 fi
 
 if [ -f ${ConfigDir}/default.cfg ];then 
-    #/mpdq-master/mpdq &
+    echo "starting mpdq"
+    /mpdq-master/mpdq &
 fi
 
 ##############################################################################
 #
 # If Rompr is not installed, do so now.
 #
+# Also uses local archive first. I do not believe rompr needs any configs from
+# outside the container, either.
+#
 ###############################################################################
-if [ ! -d /var/www/rompr ];then 
+if [ ! -d /var/www/rompr ];then
+    mkdir -p /var/www/rompr
     cd /var/www
-    wget https://github.com/fatg3erman/RompR/releases/download/1.61/rompr-1.61.zip
-    unzip rompr-1.61.zip
+    if [ -f /media/config/rompr-1.61.zip ];then
+        unzip /media/config/rompr-1.61.zip
+    else
+        wget https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
+        unzip ./master.zip
+        rm ./master.zip
+    fi
 fi
 
 ##############################################################################
-# 
 #
 # Checking/fixing rompr permissions at spin up
 #
@@ -126,6 +144,10 @@ if [ ! -d /var/www/rompr/albumart ];then
 fi
 
 chown -R www-data:www-data /var/www/rompr/{albumart,prefs}
+
+# I mean, really, tho.
+
+chown -R www-data:www-data /var/www
 
 ##############################################################################
 #
@@ -195,8 +217,6 @@ fi
 # Restart php-fpm and apache. Apache needs to be started this way so that  
 # it stays in the foreground, otherwise Docker closes it down.
 ###############################################################################
-
-
 
 /etc/init.d/php7.4-fpm restart
 
