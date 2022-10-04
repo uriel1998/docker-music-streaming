@@ -18,3 +18,5 @@ COPY build/run-snapserver /usr/local/bin/
 RUN chmod 755 /usr/local/bin/run-snapserver
 
 CMD ["/usr/local/bin/run-snapserver"]
+
+# This pulls in avahi on its own...
