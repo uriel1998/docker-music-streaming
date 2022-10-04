@@ -11,6 +11,8 @@
 
 set -e
 
+echo "starting run-httpd"
+
 export XDG_CONFIG_HOME=/usr/local/share
 export XDG_STATE_HOME=/usr/local/state
 
@@ -28,23 +30,9 @@ fi
 if [ -f /media/config/minidlna.conf ];then 
     cp -f /media/config/minidlna.conf /etc
 fi
-if [ -f /media/config/snapserver.conf ];then 
-    cp -f /media/config/snapserver.conf /etc
-fi
-if [ -f /media/config/snapserver ];then 
-    cp -f /media/config/snapserver /etc/default
-fi
 
 export MPD_HOST=mycomplicatedpassword@localhost
 
-
-# TODO
-# look in systemd files to see how they start them
-
-# Start avahi
-echo "avahi"
-# /usr/sbin/avahi-daemon -s
-#ExecReload=/usr/sbin/avahi-daemon -r
 
 # Start MPD
 #EnvironmentFile=/etc/default/mpd

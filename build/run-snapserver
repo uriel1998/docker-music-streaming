@@ -11,6 +11,8 @@
 
 set -e
 
+echo "starting snapserver"
+
 export XDG_CONFIG_HOME=/usr/local/share
 export XDG_STATE_HOME=/usr/local/state
 
