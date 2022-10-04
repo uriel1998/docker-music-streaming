@@ -111,7 +111,7 @@ fi
 
 if [ -f ${ConfigDir}/default.cfg ];then 
     echo "starting mpdq"
-    /mpdq-master/mpdq &
+    /mpdq-master/mpdq 
 fi
 
 ##############################################################################
