@@ -13,6 +13,8 @@ set -e
 
 echo "starting run-httpd"
 
+# going to use supervisor to make it work
+
 export XDG_CONFIG_HOME=/usr/local/share
 export XDG_STATE_HOME=/usr/local/state
 
@@ -24,9 +26,6 @@ export XDG_STATE_HOME=/usr/local/state
 # snapcast
 #
 ##############################################################################
-if [ -f /media/config/mpd.conf ];then 
-    cp -f /media/config/mpd.conf /etc
-fi
 if [ -f /media/config/minidlna.conf ];then 
     cp -f /media/config/minidlna.conf /etc
 fi
@@ -34,14 +33,10 @@ fi
 export MPD_HOST=mycomplicatedpassword@localhost
 
 
-# Start MPD
-#EnvironmentFile=/etc/default/mpd
-echo "mpd"
-/usr/bin/mpd 
 
 # Start mpdscribble
 echo "mpdscribble"
-/usr/bin/mpdscribble
+#/usr/bin/mpdscribble
 
 # start minidlna
 #/bin/mkdir -p /var/run/minidlna
