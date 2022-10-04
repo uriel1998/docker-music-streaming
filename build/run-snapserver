@@ -1,0 +1,28 @@
+#!/bin/bash
+  
+##############################################################################
+# run-httpd, by Steven Saus 20 Sep 2022
+#
+# For setting up and running snapserver inside a docker-compose setup
+#
+# steven@faithcollapsing.com
+# Licensed under the Apache License
+##############################################################################  
+
+set -e
+
+export XDG_CONFIG_HOME=/usr/local/share
+export XDG_STATE_HOME=/usr/local/state
+
+if [ -f /media/config/snapserver.conf ];then 
+    cp -f /media/config/snapserver.conf /etc
+fi
+if [ -f /media/config/snapserver ];then 
+    cp -f /media/config/snapserver /etc/default
+fi
+
+export MPD_HOST=mycomplicatedpassword@localhost
+echo "snapserver"
+source /etc/default/snapserver
+mkdir -p ${XDG_STATE_HOME}/snapserver
+/usr/bin/snapserver --logging.sink=system --server.datadir="${XDG_STATE_HOME}/snapserver" $SNAPSERVER_OPTS 

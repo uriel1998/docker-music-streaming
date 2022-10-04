@@ -53,13 +53,13 @@ echo "mpd"
 
 # Start mpdscribble
 echo "mpdscribble"
-#/usr/bin/mpdscribble &
+/usr/bin/mpdscribble
 
 # Start snapserver
 echo "snapserver"
-#source /etc/default/snapserver
+source /etc/default/snapserver
 mkdir -p ${XDG_STATE_HOME}/snapserver
-#/usr/bin/snapserver --logging.sink=system --server.datadir="${XDG_STATE_HOME}/snapserver" $SNAPSERVER_OPTS &
+/usr/bin/snapserver --daemon --logging.sink=system --server.datadir="${XDG_STATE_HOME}/snapserver" $SNAPSERVER_OPTS 
 # start minidlna
 #/bin/mkdir -p /var/run/minidlna
 #/bin/chown $USER /var/run/minidlna
