@@ -19,7 +19,6 @@ RUN apt-get update -y && \
     grep \
     mp3info \
     exiftool \
-    ffmpeg \   
     bc \
     unzip \
     imagemagick \

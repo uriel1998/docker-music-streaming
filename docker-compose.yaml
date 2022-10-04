@@ -12,9 +12,6 @@ services:
       - "8881:8000"  # stream - if you have something else using 8000, for example
       - "8882:6600"  # mpd control - if you have another MPD locally
       #- "8200:8200"  # minidlna
-      #- "1704:1704"  #snapserver
-      #- "1705:1705"  #snapserver
-      #- "1780:1780"  #snapserver
       #- "5353:5353"  # avahi? Not sure if dbus mount is enough
     restart: unless-stopped
     volumes:
@@ -24,8 +21,8 @@ services:
       # - ./www:/var/www/  # for rompr; leave this, it will be auto-installed.
       - ./config/apache-sites/:/etc/apache2/sites-available/ # these will copy configs on startup
       - ./config:/media/config/ # these will copy configs on startup
-      - /var/run/dbus:/var/run/dbus # for avahi to work  
-      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket # for avahi to work 
+      # - /var/run/dbus:/var/run/dbus # for avahi to work  
+      # - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket # for avahi to work 
   snapclient:
     image: local/docker_mpd_streaming
     build:

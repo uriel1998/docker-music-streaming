@@ -55,11 +55,6 @@ echo "mpd"
 echo "mpdscribble"
 /usr/bin/mpdscribble
 
-# Start snapserver
-echo "snapserver"
-source /etc/default/snapserver
-mkdir -p ${XDG_STATE_HOME}/snapserver
-/usr/bin/snapserver --daemon --logging.sink=system --server.datadir="${XDG_STATE_HOME}/snapserver" $SNAPSERVER_OPTS 
 # start minidlna
 #/bin/mkdir -p /var/run/minidlna
 #/bin/chown $USER /var/run/minidlna
@@ -129,7 +124,7 @@ if [ ! -d /var/www/rompr ];then
     if [ -f /media/config/rompr-1.61.zip ];then
         unzip /media/config/rompr-1.61.zip
     else
-        wget https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
+        wget https://github.com/fatg3erman/RompR/releases/download/1.61/rompr-1.61.zip
         unzip ./master.zip
         rm ./master.zip
     fi

@@ -8,19 +8,9 @@ RUN apt-get update -y && \
     apt-get install -y curl \
     wget \
     mpd \
-    minidlna \
     mpdscribble \
     mpc \
-    detox \
-    snapserver \
-    avahi-daemon \
-    libnss-mdns \
     coreutils \
-    grep \
-    mp3info \
-    exiftool \
-    ffmpeg \   
-    bc \
     unzip \
     imagemagick \
     libapache2-mod-php7.4 \
@@ -42,10 +32,8 @@ RUN apt-get update -y && \
     php7.4-json \
     php7.4-ldap \
     php7.4-mbstring \ 
-    php7.4-mysql \
     php7.4-odbc \
     php7.4-opcache \ 
-    php7.4-pgsql \
     php7.4-phpdbg \
     php7.4-pspell \
     php7.4-readline \
