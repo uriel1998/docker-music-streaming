@@ -42,7 +42,8 @@ export MPD_HOST=mycomplicatedpassword@localhost
 # look in systemd files to see how they start them
 
 # Start avahi
-/usr/sbin/avahi-daemon -s
+echo "avahi"
+# /usr/sbin/avahi-daemon -s
 #ExecReload=/usr/sbin/avahi-daemon -r
 
 # Start MPD
@@ -52,13 +53,13 @@ echo "mpd"
 
 # Start mpdscribble
 echo "mpdscribble"
-/usr/bin/mpdscribble &
+#/usr/bin/mpdscribble &
 
 # Start snapserver
 echo "snapserver"
-source /etc/default/snapserver
+#source /etc/default/snapserver
 mkdir -p ${XDG_STATE_HOME}/snapserver
-/usr/bin/snapserver --logging.sink=system --server.datadir="${XDG_STATE_HOME}/snapserver" $SNAPSERVER_OPTS &
+#/usr/bin/snapserver --logging.sink=system --server.datadir="${XDG_STATE_HOME}/snapserver" $SNAPSERVER_OPTS &
 # start minidlna
 #/bin/mkdir -p /var/run/minidlna
 #/bin/chown $USER /var/run/minidlna
@@ -105,13 +106,13 @@ fi
 # Copy OUT default example with updated genre list at spinup.
 if [ ! -f ${StateDir}/example_instruction_file ];then
     echo "Exporting example instruction file with list of genres."
-    /mpdq-master/mpdq -e 
-    cp -f ${StateDir}/example_instruction /media/config
+    #/mpdq-master/mpdq -e 
+    #cp -f ${StateDir}/example_instruction /media/config
 fi
 
 if [ -f ${ConfigDir}/default.cfg ];then 
     echo "starting mpdq"
-    /mpdq-master/mpdq 
+    #/mpdq-master/mpdq 
 fi
 
 ##############################################################################
