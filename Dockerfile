@@ -79,7 +79,8 @@ RUN mkdir -p /run/php && \
     mkdir -p /src/supervisor && \
     mkdir -p /var/run/minidlna 
 
-# Copy in configurations (last for sake of layers)
+# Copy in configurations for apache, supervisor 
+
 COPY build/conf-available/ /etc/apache2/conf-available
 COPY build/mods-available/ /etc/apache2/mods-available
 COPY config/supervisor /src/supervisor
