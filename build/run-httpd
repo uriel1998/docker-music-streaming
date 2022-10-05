@@ -18,8 +18,6 @@ echo "starting run-httpd"
 ##############################################################################
 # Exports
 ##############################################################################
-
-
 export XDG_CONFIG_HOME=/usr/local/share
 export XDG_STATE_HOME=/usr/local/state
 export MPD_HOST=mycomplicatedpassword@localhost
