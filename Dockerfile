@@ -88,6 +88,5 @@ COPY config/supervisor /src/supervisor
 # Copy in our build/run files for supervisor to call
 COPY build/run-* /usr/local/bin/
 RUN chmod 755 /usr/local/bin/run-*
-RUN ls /usr/local/bin/run-*
 # Start up supervisor
 CMD ["supervisord","-c","/src/supervisor/service_script.conf"]
