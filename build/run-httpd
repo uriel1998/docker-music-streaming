@@ -15,83 +15,19 @@ echo "starting run-httpd"
 
 # going to use supervisor to make it work
 
+##############################################################################
+# Exports
+##############################################################################
+
+
 export XDG_CONFIG_HOME=/usr/local/share
 export XDG_STATE_HOME=/usr/local/state
-
-##############################################################################
-#
-# Copy user configs into appropriate places in Docker container at spinup.
-# mpd.conf
-# minidlna
-# snapcast
-#
-##############################################################################
-if [ -f /media/config/minidlna.conf ];then 
-    cp -f /media/config/minidlna.conf /etc
-fi
-
 export MPD_HOST=mycomplicatedpassword@localhost
 
-
-
-# Start mpdscribble
-echo "mpdscribble"
-#/usr/bin/mpdscribble
-
-# start minidlna
-#/bin/mkdir -p /var/run/minidlna
-#/bin/chown $USER /var/run/minidlna
-#/usr/sbin/minidlnad -S &
-
 ##############################################################################
-# For MPDQ setup
+# Copy in user configs
 ##############################################################################
-# 
-# download & install mpdq (if needed) using local archive first.
-# Yes, upgrading requires a rebuild.
-# 
-if [ ! -d /mpdq-master ];then
-    if [ -f /media/config/mpdq-master.zip ];then
-        unzip /media/config/mpdq-master.zip
-    else
-        wget https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
-        unzip ./master.zip
-        rm ./master.zip
-    fi
-fi
-    
-# Define the two directories that MPDQ needs.
-export ConfigDir=${XDG_CONFIG_HOME}/mpdq
-if [ ! -d ${ConfigDir} ]; then
-    mkdir -p ${ConfigDir}
-fi
-ConfigFile=$ConfigDir/mpdq.ini
 
-export StateDir=${XDG_STATE_HOME}/mpdq
-if [ ! -d ${StateDir} ]; then
-    mkdir -p ${StateDir}
-fi
-
-# Copy in configurations.
-if [ -f /media/config/mpdq.ini ];then 
-    cp -f /media/config/mpdq.ini ${ConfigDir}
-fi
-# The provided stub is an EXCLUSION type
-if [ -f /media/config/default.cfg ];then 
-    cp -f /media/config/default.cfg ${ConfigDir}
-fi
-
-# Copy OUT default example with updated genre list at spinup.
-if [ ! -f ${StateDir}/example_instruction_file ];then
-    echo "Exporting example instruction file with list of genres."
-    #/mpdq-master/mpdq -e 
-    #cp -f ${StateDir}/example_instruction /media/config
-fi
-
-if [ -f ${ConfigDir}/default.cfg ];then 
-    echo "starting mpdq"
-    #/mpdq-master/mpdq 
-fi
 
 ##############################################################################
 #
@@ -114,40 +50,26 @@ if [ ! -d /var/www/rompr ];then
 fi
 
 ##############################################################################
-#
 # Checking/fixing rompr permissions at spin up
-#
 ##############################################################################
 if [ ! -d /var/www/rompr/albumart ];then
     mkdir -p /var/www/rompr/{albumart,prefs}
 fi
 
 chown -R www-data:www-data /var/www/rompr/{albumart,prefs}
-
-# I mean, really, tho.
-
 chown -R www-data:www-data /var/www
 
-##############################################################################
-#
-# Apache site setup
-#
-##############################################################################
 
-# remove all sites enabled
-rm -rf /etc/apache2/sites-enabled/*
-# symlink everything in sites available (which is bound to outside the container)
-sites=$(ls -A "/etc/apache2/sites-available")
-
-for site in $sites;do
-    a2ensite ${site%.*}
-done
+###############################################################################
+# PHP setup and loading apache mods if not yet set up
+###############################################################################
 
 if [ ! -f /etc/php/7.4/myinit ];then 
     ###############################################################################
     # Environment variables to configure php
     # Adjust as needed, then rebuild the container (docker-compose up --build)
     ###############################################################################
+
     sed -ri -e  's/^allow_url_fopen =.*/allow_url_fopen = On/g' /etc/php/7.4/fpm/php.ini
     sed -ri -e  's/^memory_limit =.*/memory_limit = 512M/g' /etc/php/7.4/fpm/php.ini
     sed -ri -e  's/^max_execution_time =.*/max_execution_time = 1800/g' /etc/php/7.4/fpm/php.ini
@@ -191,6 +113,22 @@ if [ ! -f /etc/php/7.4/myinit ];then
 
     touch /etc/php/7.4/myinit
 fi
+
+##############################################################################
+#
+# Apache site setup
+#
+##############################################################################
+
+# remove all sites enabled
+rm -rf /etc/apache2/sites-enabled/*
+# symlink everything in sites available (which is bound to outside the container)
+sites=$(ls -A "/etc/apache2/sites-available")
+
+for site in $sites;do
+    a2ensite ${site%.*}
+done
+
 
 ###############################################################################
 # Restart php-fpm and apache. Apache needs to be started this way so that  

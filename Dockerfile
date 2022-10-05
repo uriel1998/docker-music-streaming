@@ -61,31 +61,6 @@ RUN apt-get update -y && \
     apt autoremove && \
     rm -rf /var/lib/apt/lists/*
 
-# Create directories
-
-RUN mkdir -p /run/php/ && mkdir -p /etc/apache2/{conf-available,mods-available} && mkdir -p /src/supervisor 
-
-#/bin/mkdir -p /var/run/minidlna
-#/bin/chown $USER /var/run/minidlna
-
-# Copy in configurations (last for sake of layers)
-
-COPY build/conf-available/ /etc/apache2/conf-available
-COPY build/mods-available/ /etc/apache2/mods-available
-COPY config/supervisor /src/supervisor
-
-COPY /config/mpd.conf /etc/mpd.conf
-media/config/snapserver.conf /etc
- /media/config/snapserver /etc/default
- 
-  cp -f /media/config/minidlna.conf /etc
-fi
-Use COPY command like this:
-
-COPY foo.txt /data/foo.txt
-# where foo.txt is the relative path on host
-# and /data/foo.txt is the absolute path in the image
-
 # Expose ports
 
 EXPOSE 80
@@ -97,9 +72,34 @@ EXPOSE 1705
 EXPOSE 1780
 EXPOSE 5353
 
-# Er, maybe don't need these now?
-COPY build/run-httpd /usr/local/bin/
-RUN chmod 755 /usr/local/bin/run-httpd
+# Create directories # THESE ARE BEING MOVED TO THE SETUP/RUN MODULES
+
+RUN mkdir -p /run/php && \
+    mkdir -p /etc/apache2/{conf-available,mods-available} && \
+    mkdir -p /src/supervisor && \
+    mkdir -p /var/run/minidlna \
+    # chown $USER /var/run/minidlna
+
+# Copy in configurations (last for sake of layers)
+
+COPY build/conf-available/ /etc/apache2/conf-available
+COPY build/mods-available/ /etc/apache2/mods-available
+COPY config/supervisor /src/supervisor
+
+
+# COPY config/mpd.conf /etc/mpd.conf
+# COPY config/snapserver.conf /etc/snapserver.conf
+# COPY config/snapserver /etc/default/snapserver
+# COPY config/minidlna.conf /etc/minidlna.conf
+
+
+
+
+
+# Copy in our build/run files for supervisor to call
+COPY build/run-* /usr/local/bin/
+# COPY build/run-httpd /usr/local/bin/
+RUN chmod 755 /usr/local/bin/run-*
 
 # Start up supervisor
 CMD ["supervisord","-c","/src/supervisor/service_script.conf"]
