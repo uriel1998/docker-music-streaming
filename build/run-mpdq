@@ -1,0 +1,80 @@
+#!/bin/bash
+  
+##############################################################################
+# run-mpdq, by Steven Saus 20 Sep 2022
+#
+# For setting up and running mpdq inside a docker-compose setup
+#
+# steven@faithcollapsing.com
+# Licensed under the Apache License
+##############################################################################  
+
+set -e
+
+##############################################################################
+# Exports
+##############################################################################
+export XDG_CONFIG_HOME=/usr/local/share
+export XDG_STATE_HOME=/usr/local/state
+export MPD_HOST=mycomplicatedpassword@localhost
+
+
+# Define the two directories that MPDQ needs.
+export ConfigDir=${XDG_CONFIG_HOME}/mpdq
+if [ ! -d ${ConfigDir} ]; then
+    mkdir -p ${ConfigDir}
+fi
+ConfigFile=$ConfigDir/mpdq.ini
+
+export StateDir=${XDG_STATE_HOME}/mpdq
+if [ ! -d ${StateDir} ]; then
+    mkdir -p ${StateDir}
+fi
+
+##############################################################################
+# Copy in user configs
+##############################################################################
+if [ -f /media/config/mpdq.ini ];then 
+    cp -f /media/config/mpdq.ini ${ConfigDir}
+fi
+# The provided stub is an EXCLUSION type
+# Place your own detailed config in this file
+if [ -f /media/config/default.cfg ];then 
+    cp -f /media/config/default.cfg ${ConfigDir}
+fi
+
+
+##############################################################################
+# For MPDQ setup
+##############################################################################
+# 
+# download & install mpdq (if needed) using local archive first.
+# Yes, upgrading requires restarting the container
+# 
+if [ ! -d /mpdq-master ];then
+    if [ -f /media/config/mpdq-master.zip ];then
+        unzip /media/config/mpdq-master.zip
+    else
+        wget https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
+        unzip ./master.zip
+        rm ./master.zip
+    fi
+fi
+    
+
+# NO. Do not do this - this means a process exits. Maybe if supervisor can
+# handle it without shutting down the docker container
+# Copy OUT default example with updated genre list at spinup.
+#if [ ! -f ${StateDir}/example_instruction_file ];then
+#    echo "Exporting example instruction file with list of genres."
+    #/mpdq-master/mpdq -e 
+    #cp -f ${StateDir}/example_instruction /media/config
+#fi
+
+if [ -f ${ConfigDir}/default.cfg ];then 
+    echo "Starting MPDQ"
+    /mpdq-master/mpdq 
+else
+    echo "Default configuration not found, exiting MPDQ."
+fi
+
