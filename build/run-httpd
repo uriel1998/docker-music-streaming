@@ -39,10 +39,10 @@ if [ ! -d /var/www/rompr ];then
     mkdir -p /var/www/rompr
     cd /var/www
     if [ -f /media/config/rompr-1.61.zip ];then
-        unzip /media/config/rompr-1.61.zip
+        unzip -qq /media/config/rompr-1.61.zip
     else
         wget https://github.com/fatg3erman/RompR/releases/download/1.61/rompr-1.61.zip
-        unzip ./master.zip
+        unzip -qq ./master.zip
         rm ./master.zip
     fi
 fi

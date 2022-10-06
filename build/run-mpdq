@@ -54,10 +54,10 @@ fi
 # 
 if [ ! -d /mpdq-master ];then
     if [ -f /media/config/mpdq-master.zip ];then
-        unzip /media/config/mpdq-master.zip
+        unzip -qq /media/config/mpdq-master.zip
     else
         wget https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
-        unzip ./master.zip
+        unzip -qq ./master.zip
         rm ./master.zip
     fi
 fi
