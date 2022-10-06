@@ -77,6 +77,7 @@ EXPOSE 5353
 RUN mkdir -p /run/php && \
     mkdir -p /etc/apache2/{conf-available,mods-available} && \
     mkdir -p /src/supervisor && \
+    mkdir -p /pipe && \
     mkdir -p /var/run/minidlna 
 
 # Copy in configurations for apache, supervisor 
