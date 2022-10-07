@@ -7,6 +7,8 @@
 - drop in behind proxy
 - music directory and configurations accessible from host (at least at spinup)
 
+Right now, MDPQ does NOT work.  Minidlna, snapcast, mpdq, streaming, rompr all work
+pretty much out of the box.  Has A LOT of extra stuff pulled in at the moment though.
 
 A way to get php7.4 running by using a Docker container as a proxy that *should* 
 be able to drop in behind your reverse proxy with (potentially) as little 

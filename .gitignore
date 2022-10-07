@@ -1,5 +1,7 @@
 # reference, old shit
 1_reference/
+*.mp3
+
 
 # macOS Junks
 .DS_Store
