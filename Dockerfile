@@ -78,8 +78,15 @@ RUN mkdir -p /run/php && \
     mkdir -p /etc/apache2/{conf-available,mods-available} && \
     mkdir -p /src/supervisor && \
     mkdir -p /pipe && \
-    mkdir -p /var/run/minidlna 
+    mkdir -p /var/run/minidlna && \
+    mkdir -p /usr/local/state/mpdq && \
+    mkdir -p /usr/local/share/mpdq
 
+# set up mpdq
+# RUN wget https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
+COPY config/mpdq-master.zip .
+RUN unzip ./mpdq-master.zip && rm ./mpdq-master.zip
+    
 # Copy in configurations for apache, supervisor 
 
 COPY build/conf-available/ /etc/apache2/conf-available

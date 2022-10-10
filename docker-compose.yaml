@@ -18,7 +18,7 @@ services:
       #- "5353:5353"  # avahi? Not sure if dbus mount is enough
     restart: always
     volumes:
-      # - ./fifo:/pipe #snapserver's fifo pipe # wait, why would you need this?
+      - ./config/mpdq:/usr/local/share/mpdq/
       - ./music:/media/music/  # your music, edit this.
       - ./playlists:/media/playlists/  # your playlists
       - ./config/apache-sites/:/etc/apache2/sites-available/ # these will copy configs on startup

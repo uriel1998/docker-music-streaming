@@ -10,6 +10,11 @@
 Right now, MDPQ does NOT work.  Minidlna, snapcast, mpdq, streaming, rompr all work
 pretty much out of the box.  Has A LOT of extra stuff pulled in at the moment though.
 
+MPDQ only works if run after container is up -
+docker ps -> get container ID
+docker exec -it dfa0bbafb978 /mpdq-master/mpdq --loud
+
+
 A way to get php7.4 running by using a Docker container as a proxy that *should* 
 be able to drop in behind your reverse proxy with (potentially) as little 
 configuration as moving a configuration file, making a symbolic link, and 
