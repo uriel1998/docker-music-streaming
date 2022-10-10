@@ -2,23 +2,26 @@
 
 - mpd
 - snapcast
-- upnp server (?)
+- upnp server via minidlna
 - web interface
 - drop in behind proxy
 - music directory and configurations accessible from host (at least at spinup)
 
-Right now, MDPQ does NOT work.  Minidlna, snapcast, mpdq, streaming, rompr all work
-pretty much out of the box.  Has A LOT of extra stuff pulled in at the moment though.
+Minidlna, snapcast, mpdq, streaming, rompr all work pretty much out of the box.  
+Has A LOT of extra stuff pulled in at the moment though.
 
 MPDQ only works if run after container is up -
 docker ps -> get container ID
 docker exec -it dfa0bbafb978 /mpdq-master/mpdq --loud
 
 
-A way to get php7.4 running by using a Docker container as a proxy that *should* 
-be able to drop in behind your reverse proxy with (potentially) as little 
-configuration as moving a configuration file, making a symbolic link, and 
+A way to get php7.4, mpd, streaming, mpdscribble, snapclient running by using a 
+Docker container as a proxy that *should* be able to drop in behind your 
+reverse proxy with (potentially) as little configuration as moving a 
+configuration file, making a symbolic link, and 
 typing `docker-compose up -d --build`.
+
+Also contains mpdq, but that's got to be run after spinup.
 
 ## Contents
  1. [About](#1-about)
