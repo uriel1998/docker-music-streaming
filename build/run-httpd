@@ -42,8 +42,8 @@ if [ ! -d /var/www/rompr ];then
         unzip -qq /media/config/rompr-1.61.zip
     else
         wget https://github.com/fatg3erman/RompR/releases/download/1.61/rompr-1.61.zip
-        unzip -qq ./master.zip
-        rm ./master.zip
+        unzip -qq ./rompr-1.61.zip
+        rm ./rompr-1.61.zip
     fi
 fi
 

@@ -20,7 +20,7 @@ services:
     volumes:
       - ./config/mpdq:/usr/local/share/mpdq/
       - ./music:/media/music/  # your music, edit this.
-      - ./playlists:/media/playlists/  # your playlists
+      - ./config/playlists:/media/playlists/  # your playlists
       - ./config/apache-sites/:/etc/apache2/sites-available/ # these will copy configs on startup
       - ./config:/media/config/ # these will copy configs on startup
       - /var/run/dbus:/var/run/dbus # for avahi to work  
