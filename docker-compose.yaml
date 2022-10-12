@@ -26,3 +26,15 @@ services:
       - /var/run/dbus:/var/run/dbus # for avahi to work  
       - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket # for avahi to work 
       # - ./www:/var/www/  # for rompr; leave this, it will be auto-installed.
+  mpdq:
+    image: local/docker_mpdq
+    build:
+      context: .
+      dockerfile: ./Dockerfile_mpdq
+    container_name: mpdq
+    restart: always
+    volumes:
+      - ./config/mpdq:/usr/local/share/mpdq/
+      - ./music:/media/music/  # your music, edit this.
+      - ./config/playlists:/media/playlists/  # your playlists
+      - ./config:/media/config/ # these will copy configs on startup

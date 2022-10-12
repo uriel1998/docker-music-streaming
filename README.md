@@ -12,7 +12,7 @@ Has A LOT of extra stuff pulled in at the moment though.
 
 MPDQ only works if run after container is up -
 docker ps -> get container ID
-docker exec -it dfa0bbafb978 /mpdq-master/mpdq --loud
+docker exec -it $(docker ps | grep docker_mpd_streaming | awk '{print $1}') /mpdq-master/mpdq --loud
 
 
 A way to get php7.4, mpd, streaming, mpdscribble, snapclient running by using a 
@@ -22,6 +22,8 @@ configuration file, making a symbolic link, and
 typing `docker-compose up -d --build`.
 
 Also contains mpdq, but that's got to be run after spinup.
+
+Will need to restart the container to reflect changes in music directory, it looks like.
 
 ## Contents
  1. [About](#1-about)

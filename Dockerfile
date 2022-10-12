@@ -6,34 +6,26 @@ ENV DEBIAN_FRONTEND noninteractive
 # Install packages
 RUN apt-get update -y && \
     apt-get install -y curl \
-    wget \
-    mpd \
-    mpdscribble \
-    mpc \
-    coreutils \
-    wget \
-    mpd \
-    mpc \
-    detox \
-    coreutils \
-    grep \
-    mp3info \
-    exiftool \
+    avahi-daemon \
     bc \
-    unzip \
+    coreutils \
+    detox \
+    exiftool \
+    grep \
     imagemagick \
     libapache2-mod-php7.4 \
-    libphp7.4-embed \
-    snapserver \    
-    avahi-daemon \
     libnss-mdns \    
-    supervisor \
+    libphp7.4-embed \
+    mp3info \
+    mpc \
+    mpd \
+    mpdscribble \
     php7.4 \
-    php7.4-common \
     php7.4-bcmath \
     php7.4-bz2 \
     php7.4-cgi \
     php7.4-cli \
+    php7.4-common \
     php7.4-common \
     php7.4-curl \
     php7.4-fpm \
@@ -56,7 +48,11 @@ RUN apt-get update -y && \
     php7.4-tidy \
     php7.4-xml \ 
     php7.4-xmlrpc \
-    php7.4-zip && \
+    php7.4-zip \
+    snapserver \    
+    supervisor \
+    unzip \
+    wget && \
     apt clean && \
     apt autoremove && \
     rm -rf /var/lib/apt/lists/*
@@ -91,9 +87,9 @@ RUN unzip ./master.zip && rm ./master.zip
 
 # setup ROMPR
 RUN wget https://github.com/fatg3erman/RompR/releases/download/1.61/rompr-1.61.zip
-RUN unzip -qq ./rompr-1.61.zip -d /var/www && rm ./rompr-1.61.zip
-
-RUN chown -R www-data:www-data /var/www/rompr/{albumart,prefs} && chown -R www-data:www-data /var/www
+RUN unzip ./rompr-1.61.zip -d /var/www && rm ./rompr-1.61.zip
+# RUN chown -R www-data:www-data /var/www/rompr/{albumart,prefs} 
+# RUN chown -R www-data:www-data /var/www
 
     
 # Copy in configurations for apache, supervisor 

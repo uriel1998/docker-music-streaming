@@ -55,7 +55,7 @@ if [ ! -d /var/www/rompr/albumart ];then
 fi
 
 chown -R www-data:www-data /var/www/rompr/{albumart,prefs}
-chown -R www-data:www-data /var/www
+chown -R www-data:www-data /var/www/rompr
 
 
 ###############################################################################
