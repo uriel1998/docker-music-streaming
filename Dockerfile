@@ -5,18 +5,14 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Install packages
 RUN apt-get update -y && \
-    apt-get install -y curl \
+    apt-get install --no-install-recommends -y curl \
     avahi-daemon \
-    bc \
     coreutils \
-    detox \
-    exiftool \
     grep \
     imagemagick \
     libapache2-mod-php7.4 \
     libnss-mdns \    
     libphp7.4-embed \
-    mp3info \
     mpc \
     mpd \
     mpdscribble \
