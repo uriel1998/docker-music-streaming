@@ -1,40 +1,20 @@
 # docker-music-streaming
 
-- mpd
-- snapcast
-- upnp server via minidlna
-- web interface
-- drop in behind proxy
+
+I've written a couple of guides on how to get whole-house audio and streaming 
+by using `mpd`, `snapcast`, and other FOSS projects. I've previously described 
+it as a [weekend project](https://ideatrash.net/2021/08/further-adventures-in-whole-house-audio.html), but by using Docker, it's a trivial setup.
+
+Included are:
+
+- [mpd](https://www.musicpd.org/) for music playing and remote streaming
+- [snapcast](https://github.com/badaix/snapcast) (and snapweb) for whole-house streaming
+- [mpdscribble](https://www.musicpd.org/clients/mpdscribble/) for scrobbling to last.fm / libre.fm
+- [minidlna](https://sourceforge.net/p/minidlna/wiki/Home/) for upnp serving
+- [RompR web interface](https://fatg3erman.github.io/RompR/) (for controlling the whole thing)
+- Nginx proxy fragment
 - music directory and configurations accessible from host (at least at spinup)
 
-Minidlna, snapcast, mpdq, streaming, rompr all work pretty much out of the box.  
-Has A LOT of extra stuff pulled in at the moment though.
-
-
-Contains prebuilt version of snapweb, because it's not included by default in 
-Debian package, and avoids the need to install NPM/Typescript to build it. You 
-are more than welcome to build your own (get the source from https://github.com/badaix/snapweb ) 
-and build from source.
-
-1780 - snapweb
-what ports are mapped where
-how to set up
-publish both this and the 7.4 on docker hub (?)
-
-MPDQ only works if run after container is up -
-docker ps -> get container ID
-docker exec -it $(docker ps | grep docker_mpd_streaming | awk '{print $1}') /mpdq-master/mpdq --loud
-
-
-A way to get php7.4, mpd, streaming, mpdscribble, snapclient running by using a 
-Docker container as a proxy that *should* be able to drop in behind your 
-reverse proxy with (potentially) as little configuration as moving a 
-configuration file, making a symbolic link, and 
-typing `docker-compose up -d --build`.
-
-Also contains mpdq, but that's got to be run after spinup.
-
-Will need to restart the container to reflect changes in music directory, it looks like.
 
 ## Contents
  1. [About](#1-about)
@@ -47,25 +27,12 @@ Will need to restart the container to reflect changes in music directory, it loo
 
 ## 1. About
 
-I was not prepared to have something like half the web applications I have 
-running on my home lab to pooch it when Debian upgraded PHP from 7.4 to 8.1. 
+This is intended to be dropped behind a reverse proxy. Setting up docker, 
+docker-compose, and the reverse proxy is beyond the scope of this document. 
+Likewise, handling SSL certificates should be done at the level of the host.
 
-Yes, I was running a lot of them on "bare metal" - that is, they were not 
-inside containers.
-
-While I was able to find either upgraded versions or replacement programs, I 
-realized there had to be another way that would just let me get a bunch of 
-those web applications back up and running quickly.
-
-Most of those sites were already running behind a reverse proxy anyway. So, I 
-asked myself, what if I learned how to run Apache and PHP 7.4 inside *Docker*, 
-and allowed my "main" bare metal setup to follow Debian's upgrade path? 
-
-This is the result.
-
-The container, which is based on Debian bullseye-slim, will load any sites 
-configured in the `apache-sites` subdirectory, and serve files in the `www` 
-subdirectory. It is accessible on port 8180 by default.
+Many, *many* thanks to [Toward Data Science](https://towardsdatascience.com/run-multiple-services-in-single-docker-container-using-supervisor-b2ed53e3d1c0) whose post pointed me to how to get several things running 
+together.
 
 ## 2. License
 
@@ -73,92 +40,83 @@ This project is licensed under the Apache License. For the full license, see `LI
 
 ## 3. Prerequisites
 
-This setup is *explicitly* meant to be run behind a reverse proxy, on a LAN that 
-has a firewall at the router level. **Particularly** if you hook into the databases 
-you had been running on the host.
+Docker and docker-compose
 
-Handling things like certificates should be done at the level of your reverse 
-proxy.
-
-Obviously, you need Docker. 
+If you have `minidlna` running on the host, you cannot *also* have it running 
+in the container due to port conflicts.
 
 ## 4. Installation
 
 1. Clone or download this repository.
 
-2. Move (from an existing Apache installation) or create configuration files for
-each of the websites to serve into the subdirectory `apache-sites`. 
+2. Change into the directory you put these files into. Create a symbolic link to 
+your already existing music directory (no need to move it!) by typing 
 
-3. Make sure each of the Virtual Hosts is listening on *port 80*, e.g. `<VirtualHost *:80>`.
+`ln -s /path/to/mymusic ./music`
 
-4. Put the contents of the websites into the subdirectory `www`. Symbolic links 
-*should* work. The subdirectory `www` will be equivalent to `/var/www` inside the 
-container.
+substituting `/path/to/mymusic` with the path to your music collection.
 
-5. Examine the tweaks to php.ini and modules loaded in Apache in `/build/run_httpd.sh`. 
-If you wish to change these after the initial build, you will need to re-build 
-the image (`docker-compose up --build -d`) instead of just bringing it up.
+3. *Optional* Add your last.fm / libre.fm login for `mpdscribble` in 
+`config/mpdscribble.conf`.
 
-6. Bring up the container with `docker-compose up -d --build`. If you want to be 
-difficult on yourself, see the `build.sh` and `run.sh` scripts.
+4. *Optional* If you wish to change the password for MPD, it's in `config/mpd.conf`. By default, 
+it is set to `mycomplicatedpassword`. If you change the password, you will also 
+have to change it for `mpdscribble` and each of the `run-*` scripts in  `./build`. 
 
-7. Change the relevant proxy port for the reverse proxy to 8180. The specifics 
-will vary depending on what your reverse proxy is. For example, if you're using 
-nginx, the relevant *portion* of the config should look something like this:
+5. Bring up the container with `docker-compose up -d --build`. Get a drink or 
+stretch or something, it'll take a while. 
+
+6. Point your browser at `http://localhost:8880` **Note that it is http, not httpS.** You should see RompR's main interface. Click the gear icon, then click `Edit Players`. 
+
+![Edit Players](https://raw.githubusercontent.com/uriel1998/docker-music-streaming/master/setup1.png "Click the gear, then edit player")
+
+Then add the password - by default, `mycomplicatedpassword` - to the password field.
+
+![Add Password](https://raw.githubusercontent.com/uriel1998/docker-music-streaming/master/setup2.png "Add password")
+
+Then click the blinking "Update Music Collection Now" button. Stretch again. Avoid 
+repetitive stress injuries. Also, if you have a large collection, this may take a 
+**while**.
+
+7. At this point you should have a fully-functional installation. You get to 
+RompR by pointing your browser at `http://localhost:8880`. You can access the stream at 
+`http://localhost:8881` with pretty much anything that can handle MP3s. Snapcast should 
+auto-discover using avahi, and you can access the Snapweb interface at `http://localhost:1780`.
+
+8. *Optional-ish* Change the relevant proxy port for the reverse proxy to 8880, and for the stream to 8881. The specifics  will vary depending on what your reverse proxy is. For 
+example, if you're using nginx, the relevant *portion* of the config should look something like this:
 
 ```
-   location / {
-   include errorpages.conf;
-   proxy_pass http://192.168.1.101:8180;
-   proxy_set_header X-Real-IP $remote_addr;
-   proxy_set_header Host $host;
-   }
+server {
+    server_name example.com;
+    location /mpd.mp3 {
+        proxy_pass http://localhost:8881;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $host;     
+    }
+    location / {
+        proxy_pass http://192.168.1.101:8880;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Host $host;
+    }
+}
 ```
 
 ## 5. Notes
 
-* Add additional mounts (e.g. for a music directory, and so on) to docker-compose.yaml
-as needed. For example, to mount /media/music to /var/music inside the container, 
-add the line `      - ./media/music:/var/music/` at the bottom of `docker-compose.yaml.`
+* There are several d-bus mounts that are required for avahi to talk to the 
+rest of the network outside the Docker container. [This is pretty much the only 
+way](https://stackoverflow.com/questions/30646943/how-to-avahi-browse-from-a-docker-container) (without installing additional software outside the container) to get avahi 
+to work.
 
-* Note that you will probably have to change ownership on the served directories
-(or at least some of them) to www-data:www-data (or 33:33), which is the UID/GID for 
-apache on debian
+* This repository contains a prebuilt version of [snapweb](https://github.com/badaix/snapweb),
+because the Debian package apparently does *not* contain it by default, and making it from source requires TypeScript, which requires NPM, and man, these images are *already* too 
+big... but if you don't trust my build, or want to substitute one of your own, 
+literally just replace `build/snapweb` with what you build yourself.
 
-* You may wish to also chmod to 6777 to preserve GID/UID of files written there.
-chmod g+s ./ 
+* You *may* need to bring the container down and then back up to get it to 
+recognize changes to the music directory on the host.
 
-* If you need to change the sites that are served, you will need to bring the 
-container down and back up again. There is no need to re-build the image in 
-order to add or remove sites served by the container.
-
-* It is very likely that you will need to change the permissions for the `www` 
-subdirectory to be owned by `www-data`, which is the user for Apache in Debian. The 
-UID and GID for user `www-data` are `33`, so you can set the permissions by 
-typing 
-
-`sudo chown -R 33:33 /the/full/path/to/www`
-
-### Connecting to MySQL (and presumably other databases) On The Host
-
-There are several steps you will need to take in order to let web applications 
-talk to a database server running on the host. 
-
-* Firewall - make sure your firewall allows from the docker IP ranges as well. Those 
-are usually 172.*.*.*/16. You can find out the IP address of a running Docker 
-process through `docker inspect [container ID] | grep IPAddress`. The less 
-secure way - but significantly easier - is to allow access to port 3306 
-(e.g., `sudo ufw allow in to any port 3306`) while blocking port access at 
-your router's firewall.
-
-* If you're connecting to an existing database on the host, make sure the 
-*DATABASE* permissions allow for the user to not be on "localhost". Note the '%' 
-modifier, e.g. 
-
-```
-CREATE USER 'myuser'@'%' IDENTIFIED BY 'mycomplicatedpassword';
-GRANT ALL PRIVILEGES ON mydb.* TO 'myuser'@'%';
-```
-
-* Note that you may have to change the addresses that MySQL will bind to as well, 
-following these instructions from [StackOverflow](https://stackoverflow.com/questions/16287559/mysql-adding-user-for-remote-access#37341046).
+* This Docker image is *UNOPTIMIZED*. I'm sure it pulls in *way* more than is 
+actually needed, but my focus here was getting a MVP that worked essentially out 
+of the box.
