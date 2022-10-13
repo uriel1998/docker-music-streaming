@@ -10,6 +10,12 @@
 Minidlna, snapcast, mpdq, streaming, rompr all work pretty much out of the box.  
 Has A LOT of extra stuff pulled in at the moment though.
 
+
+1780 - snapweb
+what ports are mapped where
+how to set up
+publish both this and the 7.4 on docker hub (?)
+
 MPDQ only works if run after container is up -
 docker ps -> get container ID
 docker exec -it $(docker ps | grep docker_mpd_streaming | awk '{print $1}') /mpdq-master/mpdq --loud
