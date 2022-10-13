@@ -1,0 +1,35 @@
+#!/bin/bash
+  
+##############################################################################
+# run-mpd, by Steven Saus 20 Sep 2022
+#
+# For setting up and running mpd inside a Docker container.
+#
+# steven@faithcollapsing.com
+# Licensed under the Apache License
+##############################################################################  
+
+set -e
+
+echo "starting run-mpd"
+
+##############################################################################
+# Exports
+##############################################################################
+export XDG_CONFIG_HOME=/usr/local/share
+export XDG_STATE_HOME=/usr/local/state
+export MPD_HOST=mycomplicatedpassword@mpd
+
+
+##############################################################################
+# Copy in user configs
+##############################################################################
+if [ -f /media/config/mpdq/* ];then 
+    cp -f /media/config/mpdq/* ${XDG_CONFIG_HOME}/mpdq
+fi
+
+
+
+echo "Starting mpdq"
+
+/mpdq-master/mpdq --loud

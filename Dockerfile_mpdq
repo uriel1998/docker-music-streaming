@@ -33,11 +33,9 @@ RUN wget "https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip"
 
 RUN unzip ./master.zip && rm ./master.zip
 
-  
-# Copy in configurations for apache, supervisor 
 
 # Copy in our build/run files for supervisor to call
 COPY build/run-* /usr/local/bin/
 RUN chmod 755 /usr/local/bin/run-*
-# Start up supervisor
-CMD ["/mpdq-master/mpdq","--loud",""]
+# Start up mpdq
+CMD ["/usr/local/bin/run-mpdq"]
