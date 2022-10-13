@@ -50,11 +50,7 @@ in the container due to port conflicts.
 1. Clone or download this repository.
 
 2. Change into the directory you put these files into. Create a symbolic link to 
-your already existing music directory (no need to move it!) by typing 
-
-`ln -s /path/to/mymusic ./music`
-
-substituting `/path/to/mymusic` with the path to your music collection.
+your already existing music directory (no need to move it!) by typing `ln -s /path/to/mymusic ./music` (substituting `/path/to/mymusic` with the path to your music collection.)
 
 3. *Optional* Add your last.fm / libre.fm login for `mpdscribble` in 
 `config/mpdscribble.conf`.
@@ -68,11 +64,11 @@ stretch or something, it'll take a while.
 
 6. Point your browser at `http://localhost:8880` **Note that it is http, not httpS.** You should see RompR's main interface. Click the gear icon, then click `Edit Players`. 
 
-![Edit Players](https://raw.githubusercontent.com/uriel1998/docker-music-streaming/master/setup1.png "Click the gear, then edit player")
+![Edit Players](https://github.com/uriel1998/docker-music-streaming/blob/master/setup_1.png?raw=true "Click the gear, then edit player")
 
 Then add the password - by default, `mycomplicatedpassword` - to the password field.
 
-![Add Password](https://raw.githubusercontent.com/uriel1998/docker-music-streaming/master/setup2.png "Add password")
+![Add Password](https://github.com/uriel1998/docker-music-streaming/blob/master/setup_2.png?raw=true "Add password")
 
 Then click the blinking "Update Music Collection Now" button. Stretch again. Avoid 
 repetitive stress injuries. Also, if you have a large collection, this may take a 
