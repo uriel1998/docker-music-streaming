@@ -1,11 +1,6 @@
 "use strict";
 class Host {
     constructor(json) {
-        this.arch = "";
-        this.ip = "";
-        this.mac = "";
-        this.name = "";
-        this.os = "";
         this.fromJson(json);
     }
     fromJson(json) {
@@ -15,11 +10,14 @@ class Host {
         this.name = json.name;
         this.os = json.os;
     }
+    arch = "";
+    ip = "";
+    mac = "";
+    name = "";
+    os = "";
 }
 class Client {
     constructor(json) {
-        this.id = "";
-        this.connected = false;
         this.fromJson(json);
     }
     fromJson(json) {
@@ -32,14 +30,15 @@ class Client {
         this.lastSeen = { sec: json.lastSeen.sec, usec: json.lastSeen.usec };
         this.connected = Boolean(json.connected);
     }
+    id = "";
+    host;
+    snapclient;
+    config;
+    lastSeen;
+    connected = false;
 }
 class Group {
     constructor(json) {
-        this.name = "";
-        this.id = "";
-        this.stream_id = "";
-        this.muted = false;
-        this.clients = [];
         this.fromJson(json);
     }
     fromJson(json) {
@@ -50,6 +49,11 @@ class Group {
         for (let client of json.clients)
             this.clients.push(new Client(client));
     }
+    name = "";
+    id = "";
+    stream_id = "";
+    muted = false;
+    clients = [];
     getClient(id) {
         for (let client of this.clients) {
             if (client.id == id)
@@ -60,8 +64,6 @@ class Group {
 }
 class Stream {
     constructor(json) {
-        this.id = "";
-        this.status = "";
         this.fromJson(json);
     }
     fromJson(json) {
@@ -70,11 +72,12 @@ class Stream {
         let juri = json.uri;
         this.uri = { raw: juri.raw, scheme: juri.scheme, host: juri.host, path: juri.path, fragment: juri.fragment, query: juri.query };
     }
+    id = "";
+    status = "";
+    uri;
 }
 class Server {
     constructor(json) {
-        this.groups = [];
-        this.streams = [];
         if (json)
             this.fromJson(json);
     }
@@ -89,6 +92,9 @@ class Server {
             this.streams.push(new Stream(jstream));
         }
     }
+    groups = [];
+    server;
+    streams = [];
     getClient(id) {
         for (let group of this.groups) {
             let client = group.getClient(id);
@@ -294,6 +300,11 @@ class SnapControl {
             show();
         }
     }
+    baseUrl;
+    connection;
+    server;
+    msg_id;
+    status_req_id;
 }
 let snapcontrol;
 let snapstream = null;
@@ -305,7 +316,7 @@ function autoplayRequested() {
 function show() {
     // Render the page
     const versionElem = document.getElementsByTagName("meta").namedItem("version");
-    console.log("Snapweb version " + versionElem?.content);
+    console.log("Snapweb version " + (versionElem ? versionElem.content : "null"));
     let play_img;
     if (snapstream) {
         play_img = 'stop.png';

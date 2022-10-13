@@ -11,6 +11,11 @@ Minidlna, snapcast, mpdq, streaming, rompr all work pretty much out of the box.
 Has A LOT of extra stuff pulled in at the moment though.
 
 
+Contains prebuilt version of snapweb, because it's not included by default in 
+Debian package, and avoids the need to install NPM/Typescript to build it. You 
+are more than welcome to build your own (get the source from https://github.com/badaix/snapweb ) 
+and build from source.
+
 1780 - snapweb
 what ports are mapped where
 how to set up
