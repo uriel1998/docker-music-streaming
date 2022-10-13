@@ -73,15 +73,12 @@ RUN mkdir -p /run/php && \
     mkdir -p /src/supervisor && \
     mkdir -p /pipe && \
     mkdir -p /var/run/minidlna && \
-    mkdir -p /usr/local/state/mpdq && \
-    mkdir -p /usr/local/share/mpdq && \
+    mkdir -p /var/www/snapweb && \
     mkdir -p /var/www/rompr && \
     mkdir -p /var/www/rompr/{albumart,prefs}
 
-# set up mpdq
-RUN wget https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip
-# COPY config/mpdq-master.zip .
-RUN unzip ./master.zip && rm ./master.zip
+# setup Snapweb
+COPY build/snapweb/ /var/www/snapweb
 
 # setup ROMPR
 RUN wget https://github.com/fatg3erman/RompR/releases/download/1.61/rompr-1.61.zip
