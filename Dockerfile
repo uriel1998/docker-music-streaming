@@ -5,8 +5,10 @@ ENV DEBIAN_FRONTEND noninteractive
 
 # Install packages
 RUN apt-get update -y && \
-    apt-get install --no-install-recommends -y curl \
+    apt-get install -y curl \
     avahi-daemon \
+    ca-certificates \
+    ca-certificates-java \
     coreutils \
     grep \
     imagemagick \

@@ -1,0 +1,43 @@
+FROM debian:bullseye-slim
+MAINTAINER Steven Saus (steven@faithcollapsing.com)
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# Install packages
+RUN apt-get update --no-install-recommends -y && \
+    apt-get install -y mpc \
+    ca-certificates \
+    ca-certificates-java \
+    exiftool \
+    mp3info \
+    curl \
+    bc \
+    coreutils \
+    detox \
+    procps \
+    grep \
+    unzip \
+    wget && \
+    apt clean && \
+    apt autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN update-ca-certificates
+# Create directories
+
+RUN mkdir -p /usr/local/state/mpdq && \
+    mkdir -p /usr/local/share/mpdq 
+# set up mpdq
+RUN wget "https://github.com/uriel1998/mpdq/archive/refs/heads/master.zip"
+# COPY config/mpdq-master.zip .
+
+RUN unzip ./master.zip && rm ./master.zip
+
+  
+# Copy in configurations for apache, supervisor 
+
+# Copy in our build/run files for supervisor to call
+COPY build/run-* /usr/local/bin/
+RUN chmod 755 /usr/local/bin/run-*
+# Start up supervisor
+CMD ["/mpdq-master/mpdq","--loud",""]
