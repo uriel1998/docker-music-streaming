@@ -171,19 +171,95 @@ If `UPDATE_URL` is blank, that updater process simply idles and does nothing.
 - Avahi and DLNA discovery tend to behave better on Linux Docker hosts than on macOS or Windows Docker backends.
 - The bundled Snapweb assets are copied from [`build/snapweb/`](/home/steven/Documents/programming/docker-music-streaming/build/snapweb) during the image build.
 
-## Verification
+## Example Setup 1: No Reverse Proxy
 
-The repository currently validates cleanly with:
+This is the straightforward case where this stack is directly exposed to the internet and Caddy handles HTTPS itself.
 
-```bash
-sh -n docker/caddy/start-caddy.sh docker/app/*.sh
-docker compose config
+1. Point your DNS record for `music.example.com` at your public IP.
+2. Set your `.env` values like this:
+
+```dotenv
+DOMAIN=music.example.com
+SECDOMAIN=
+UPDATE_URL=
+EXTERIOR_PORT=80
+EXTERIOR_PORT_HTTPS=443
+BEHIND_PROXY=false
+GET_HTTPS_CERTIFICATE=true
+MUSIC_DIRECTORY=/srv/music
+USE_SNAPCAST=true
+STREAM_OUT=true
 ```
 
-The obvious next real-world test on the target host is:
+3. Forward router port `80/tcp` to the Docker host.
+4. Forward router port `443/tcp` to the Docker host.
+5. Leave the other ports unforwarded unless you specifically want remote access to MPD, Snapcast, MiniDLNA, or Snapweb.
+6. Start the stack:
 
 ```bash
 docker compose up -d --build
-docker compose ps
-docker compose logs -f
 ```
+
+7. Open `https://music.example.com/` for the web UI.
+8. Open `https://music.example.com/mpd.mp3` for the MPD stream.
+
+In this mode, Caddy obtains and renews certificates itself because the container is directly reachable on ports `80` and `443`.
+
+## Example Setup 2: Behind Nginx Reverse Proxy With TLS Termination
+
+This is the case where another machine or container is already handling public HTTPS with nginx and Let’s Encrypt, and this stack should stay behind that proxy on plain HTTP.
+
+1. Set your `.env` values like this:
+
+```dotenv
+DOMAIN=music.internal.example
+SECDOMAIN=
+UPDATE_URL=
+EXTERIOR_PORT=8080
+EXTERIOR_PORT_HTTPS=8443
+BEHIND_PROXY=true
+GET_HTTPS_CERTIFICATE=false
+MUSIC_DIRECTORY=/srv/music
+USE_SNAPCAST=true
+STREAM_OUT=true
+```
+
+2. Start the stack:
+
+```bash
+docker compose up -d --build
+```
+
+3. Make sure nginx can reach the Docker host on `http://docker-host:8080`.
+4. Terminate TLS at nginx using your existing Let’s Encrypt setup.
+5. Proxy both the site root and `/mpd.mp3` to the Docker host on the same upstream port.
+
+Example nginx server block:
+
+```nginx
+server {
+    listen 80;
+    server_name music.example.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name music.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/music.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/music.example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://docker-host:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+}
+```
+
+6. Open `https://music.example.com/` for the web UI.
+7. Open `https://music.example.com/mpd.mp3` for the MPD stream.
+
+In this mode, nginx owns the public certificates and TLS negotiation. Caddy stays internal and serves plain HTTP to the reverse proxy.
