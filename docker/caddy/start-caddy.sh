@@ -46,7 +46,7 @@ fi
 cat >> /etc/caddy/Caddyfile <<'EOF'
 
     handle {
-        reverse_proxy app:80
+        reverse_proxy app:8080
     }
 }
 EOF

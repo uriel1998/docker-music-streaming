@@ -18,3 +18,10 @@
 - Wired the public ports through `EXTERIOR_PORT` and `EXTERIOR_PORT_HTTPS`, while keeping the media/control ports directly available for MPD, DLNA, Snapcast, and mDNS.
 - Added a Caddy startup script that generates the effective `Caddyfile` from `.env`, including conditional automatic HTTPS based on `GET_HTTPS_CERTIFICATE` and `BEHIND_PROXY`.
 - Routed the primary web UI through Caddy and made MPD stream proxying conditional on `STREAM_OUT`.
+
+### Step 4
+- Added a new Debian-based application image that installs avahi, myMPD, MPD, minidlna, mpdscribble, snapserver, supervisor, and `catt`.
+- Replaced the legacy Apache/RompR startup flow with supervisor-managed service scripts under `docker/app/`.
+- Kept service configuration externalized by copying from `/config` at startup and persisting runtime state under named Docker volumes.
+- Added the requested FreeDNS cron updater inside the application container.
+- Updated the README to describe the new myMPD+Caddy deployment model and the `.env` contract.

@@ -1,118 +1,66 @@
 # docker-music-streaming
 
+Dockerized whole-house audio stack built around `mpd`, `myMPD`, `snapcast`, `snapweb`, `minidlna`, `mpdscribble`, `avahi`, and `catt`, with Caddy handling the public web entrypoint.
 
-I've written a couple of guides on how to get whole-house audio and streaming 
-by using `mpd`, `snapcast`, and other FOSS projects. I've previously described 
-it as a [weekend project](https://ideatrash.net/2021/08/further-adventures-in-whole-house-audio.html), but by using Docker, it's a trivial setup.
+## What Changed
 
-Included are:
+This repo now targets:
 
-- [mpd](https://www.musicpd.org/) for music playing and remote streaming
-- [snapcast](https://github.com/badaix/snapcast) (and snapweb) for whole-house streaming
-- [mpdscribble](https://www.musicpd.org/clients/mpdscribble/) for scrobbling to last.fm / libre.fm
-- [minidlna](https://sourceforge.net/p/minidlna/wiki/Home/) for upnp serving
-- [RompR web interface](https://fatg3erman.github.io/RompR/) (for controlling the whole thing)
-- Nginx proxy fragment
-- music directory and configurations accessible from host (at least at spinup)
+- `myMPD` instead of RompR
+- `Caddy` instead of an Apache/PHP web tier
+- `.env`-driven Docker Compose deployment
+- host-mounted configuration under [`config/`](/home/steven/Documents/programming/docker-music-streaming/config)
+- optional automatic HTTPS when the instance is public and not behind another reverse proxy
+- optional FreeDNS dynamic updates from inside the application container
 
+The older 2022 stack is intentionally left in `1_reference/` as local migration material and is not part of the new tracked deployment.
 
-## Contents
- 1. [About](#1-about)
- 2. [License](#2-license)
- 3. [Prerequisites](#3-prerequisites)
- 4. [Installation](#4-Installation)
- 5. [Notes](#5-Notes)
+## Layout
 
-***
+- [`compose.yaml`](/home/steven/Documents/programming/docker-music-streaming/compose.yaml): primary deployment definition
+- [`docker/app/Dockerfile`](/home/steven/Documents/programming/docker-music-streaming/docker/app/Dockerfile): application image containing MPD, myMPD, minidlna, snapserver, avahi, mpdscribble, and `catt`
+- [`docker/caddy/start-caddy.sh`](/home/steven/Documents/programming/docker-music-streaming/docker/caddy/start-caddy.sh): generates the runtime Caddy config from `.env`
+- [`config/`](/home/steven/Documents/programming/docker-music-streaming/config): user-editable service configs mounted from the host
+- [`build/snapweb/`](/home/steven/Documents/programming/docker-music-streaming/build/snapweb): bundled snapweb assets copied into the image
 
-## 1. About
+## Environment
 
-This is intended to be dropped behind a reverse proxy. Setting up docker, 
-docker-compose, and the reverse proxy is beyond the scope of this document. 
-Likewise, handling SSL certificates should be done at the level of the host.
+Copy [`.env.example`](/home/steven/Documents/programming/docker-music-streaming/.env.example) to `.env` if needed and adjust the values.
 
-Many, *many* thanks to [Toward Data Science](https://towardsdatascience.com/run-multiple-services-in-single-docker-container-using-supervisor-b2ed53e3d1c0) whose post pointed me to how to get several things running 
-together.
+Key settings:
 
-## 2. License
+- `DOMAIN`: primary public hostname for the Caddy site
+- `SECDOMAIN`: only set this when using a second FreeDNS A record for web redirection to a non-standard external port
+- `UPDATE_URL`: FreeDNS dynamic-update endpoint; leave blank to disable
+- `EXTERIOR_PORT`: external HTTP port published by Caddy
+- `EXTERIOR_PORT_HTTPS`: external HTTPS port published by Caddy
+- `BEHIND_PROXY=true`: disables Caddy automatic certificate issuance
+- `GET_HTTPS_CERTIFICATE=true`: allows Caddy to obtain certificates when the instance is directly reachable
+- `MUSIC_DIRECTORY`: host path mounted into `/media/music`
+- `USE_SNAPCAST`: controls whether the snapserver process is started
+- `STREAM_OUT`: controls whether the MPD HTTP stream is exposed through Caddy at `/mpd.mp3`
 
-This project is licensed under the Apache License. For the full license, see `LICENSE`.
+`SECDOMAIN` should normally stay blank. Use it only for the FreeDNS web-redirect case where `DOMAIN` is redirected to a second hostname that points at your actual IP and custom port.
 
-## 3. Prerequisites
+## Running
 
-Docker and docker-compose
+1. Adjust `.env`.
+2. Review the configs in [`config/`](/home/steven/Documents/programming/docker-music-streaming/config).
+3. Put your library at the path referenced by `MUSIC_DIRECTORY`.
+4. Start the stack with `docker compose up -d --build`.
 
-If you have `minidlna` running on the host, you cannot *also* have it running 
-in the container due to port conflicts.
+Primary access paths:
 
-## 4. Installation
+- `http://DOMAIN[:EXTERIOR_PORT]/` or `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/`: myMPD through Caddy
+- `http://DOMAIN[:EXTERIOR_PORT]/mpd.mp3`: MPD HTTP stream when `STREAM_OUT=true`
+- `http://host:1780/`: direct snapweb access
+- `host:6600`: direct MPD client access
+- `host:8200`: MiniDLNA
+- `host:1704` and `host:1705`: Snapcast
 
-1. Clone or download this repository.
+## Notes
 
-2. Change into the directory you put these files into. Create a symbolic link to 
-your already existing music directory (no need to move it!) by typing `ln -s /path/to/mymusic ./music` (substituting `/path/to/mymusic` with the path to your music collection.)
-
-3. *Optional* Add your last.fm / libre.fm login for `mpdscribble` in 
-`config/mpdscribble.conf`.
-
-4. *Optional* If you wish to change the password for MPD, it's in `config/mpd.conf`. By default, 
-it is set to `mycomplicatedpassword`. If you change the password, you will also 
-have to change it for `mpdscribble` and each of the `run-*` scripts in  `./build`. 
-
-5. Bring up the container with `docker-compose up -d --build`. Get a drink or 
-stretch or something, it'll take a while. 
-
-6. Point your browser at `http://localhost:8880` **Note that it is http, not httpS.** You should see RompR's main interface. Click the gear icon, then click `Edit Players`. 
-
-![Edit Players](https://github.com/uriel1998/docker-music-streaming/blob/master/setup_1.png?raw=true "Click the gear, then edit player")
-
-Then add the password - by default, `mycomplicatedpassword` - to the password field.
-
-![Add Password](https://github.com/uriel1998/docker-music-streaming/blob/master/setup_2.png?raw=true "Add password")
-
-Then click the blinking "Update Music Collection Now" button. Stretch again. Avoid 
-repetitive stress injuries. Also, if you have a large collection, this may take a 
-**while**.
-
-7. At this point you should have a fully-functional installation. You get to 
-RompR by pointing your browser at `http://localhost:8880`. You can access the stream at 
-`http://localhost:8881` with pretty much anything that can handle MP3s. Snapcast should 
-auto-discover using avahi, and you can access the Snapweb interface at `http://localhost:1780`.
-
-8. *Optional-ish* Change the relevant proxy port for the reverse proxy to 8880, and for the stream to 8881. The specifics  will vary depending on what your reverse proxy is. For 
-example, if you're using nginx, the relevant *portion* of the config should look something like this:
-
-```
-server {
-    server_name example.com;
-    location /mpd.mp3 {
-        proxy_pass http://localhost:8881;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header Host $host;     
-    }
-    location / {
-        proxy_pass http://192.168.1.101:8880;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header Host $host;
-    }
-}
-```
-
-## 5. Notes
-
-* There are several d-bus mounts that are required for avahi to talk to the 
-rest of the network outside the Docker container. [This is pretty much the only 
-way](https://stackoverflow.com/questions/30646943/how-to-avahi-browse-from-a-docker-container) (without installing additional software outside the container) to get avahi 
-to work.
-
-* This repository contains a prebuilt version of [snapweb](https://github.com/badaix/snapweb),
-because the Debian package apparently does *not* contain it by default, and making it from source requires TypeScript, which requires NPM, and man, these images are *already* too 
-big... but if you don't trust my build, or want to substitute one of your own, 
-literally just replace `build/snapweb` with what you build yourself.
-
-* You *may* need to bring the container down and then back up to get it to 
-recognize changes to the music directory on the host.
-
-* This Docker image is *UNOPTIMIZED*. I'm sure it pulls in *way* more than is 
-actually needed, but my focus here was getting a MVP that worked essentially out 
-of the box.
+- Automatic HTTPS is only enabled when `GET_HTTPS_CERTIFICATE=true` and `BEHIND_PROXY=false`.
+- The FreeDNS updater is implemented with an in-container cron job using the schedule requested in `INSTRUCTIONS.txt`.
+- `catt` is installed in the application image for ad-hoc casting workflows; it is not a long-running service.
+- Avahi and DLNA discovery inside Docker can vary by host OS and network setup. The stack keeps those services available, but multicast discovery is still more reliable on Linux hosts than on macOS or Windows Docker backends.
