@@ -7,3 +7,8 @@
 - Kept `1_reference/` and `INSTRUCTIONS.txt` available as local migration source material while excluding them from the final project history.
 - Added ignore coverage for local env files, runtime state, media, playlists, and common editor/build noise.
 - Confirmed there were no currently tracked media or env files that needed to be removed from version control in this step.
+
+### Step 2
+- Normalized the environment keys to Docker Compose `.env` format using `KEY=value`.
+- Added a tracked `.env.example` template so the deployment contract is committed without forcing a secret-bearing `.env` into version control.
+- Chose explicit boolean and port defaults so Compose can interpolate them without extra transformation.
