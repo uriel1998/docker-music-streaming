@@ -168,6 +168,7 @@ If `UPDATE_URL` is blank, that updater process simply idles and does nothing.
 ## Notes
 
 - `catt` is installed in the application image for manual casting work, not as a long-running service.
+- `myMPD` is installed from the upstream JCorporation APT repository during image build so the container follows the official Debian packaging path.
 - Avahi and DLNA discovery tend to behave better on Linux Docker hosts than on macOS or Windows Docker backends.
 - The bundled Snapweb assets are copied from [`build/snapweb/`](/home/steven/Documents/programming/docker-music-streaming/build/snapweb) during the image build.
 

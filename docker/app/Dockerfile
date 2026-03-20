@@ -3,12 +3,26 @@ FROM debian:bookworm-slim
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_BREAK_SYSTEM_PACKAGES=1
 
-# System packages provide the long-running services; `catt` is installed from
-# PyPI because it is used as a utility rather than a daemon.
+# myMPD is installed from the upstream JCorporation repository, following the
+# official Debian instructions, so the image does not depend on the distro
+# package version or package availability.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        avahi-daemon \
         ca-certificates \
+        curl \
+        gnupg && \
+    . /etc/os-release && \
+    curl -fsSL "http://download.opensuse.org/repositories/home:/jcorporation/Debian_${VERSION_ID}/Release.key" -o /tmp/jcorporation.key && \
+    test "$(gpg --show-keys --with-colons /tmp/jcorporation.key | awk -F: '/^fpr:/ {print $10; exit}')" = "A37AADC40A1CC6BEFB75372FAA09B8CCE895BD7D" && \
+    gpg --dearmor --batch --yes --output /usr/share/keyrings/jcorporation.github.io.gpg /tmp/jcorporation.key && \
+    chmod 644 /usr/share/keyrings/jcorporation.github.io.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/jcorporation.github.io.gpg] http://download.opensuse.org/repositories/home:/jcorporation/Debian_${VERSION_ID}/ ./" > /etc/apt/sources.list.d/jcorporation.list && \
+    rm -f /tmp/jcorporation.key && \
+    apt-get update && \
+    # System packages provide the long-running services; `catt` is installed
+    # from PyPI because it is used as a utility rather than a daemon.
+    apt-get install -y --no-install-recommends \
+        avahi-daemon \
         cron \
         dbus \
         ffmpeg \
