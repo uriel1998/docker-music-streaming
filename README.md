@@ -93,10 +93,13 @@ docker compose down
 - `http://DOMAIN[:EXTERIOR_PORT]/`: main web UI through Caddy
 - `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/`: main web UI through Caddy when automatic HTTPS is enabled
 - `http://DOMAIN[:EXTERIOR_PORT]/mpd.mp3`: MPD HTTP stream when `STREAM_OUT=true`
+- `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/mpd.mp3`: MPD HTTP stream over HTTPS when automatic HTTPS is enabled
 - `http://host:1780/`: direct Snapweb access
 - `host:6600`: direct MPD client access
 - `host:8200`: MiniDLNA
 - `host:1704` and `host:1705`: Snapcast
+
+The MPD stream is intentionally served on the same public HTTP or HTTPS port as the web UI. There is no separate public stream port to open or forward. Caddy proxies `/mpd.mp3` to MPD's internal port `8000` inside the Compose network.
 
 ## Service Model
 
@@ -115,6 +118,34 @@ Caddy requests and manages certificates only when both conditions are met:
 - `BEHIND_PROXY=false`
 
 If the stack is behind another reverse proxy, set `BEHIND_PROXY=true` so Caddy serves plain HTTP internally and does not attempt ACME validation.
+
+## Ports To Open And Forward
+
+Which ports must be open depends on which parts of the stack you want reachable from outside your LAN.
+
+Always required for the web UI and `/mpd.mp3` stream:
+
+- `EXTERIOR_PORT` TCP: HTTP entrypoint exposed by Caddy
+- `EXTERIOR_PORT_HTTPS` TCP: HTTPS entrypoint exposed by Caddy when automatic HTTPS is enabled
+
+Usually not required to expose publicly unless you explicitly want remote access to them:
+
+- `6600/tcp`: direct MPD client access
+- `8200/tcp`: MiniDLNA HTTP service
+- `1704/tcp`: Snapcast audio stream
+- `1705/tcp`: Snapcast control protocol
+- `1780/tcp`: direct Snapweb access without Caddy
+
+LAN-only discovery ports:
+
+- `1900/udp`: SSDP for DLNA discovery
+- `5353/udp`: mDNS/Avahi service discovery
+
+Recommended forwarding model:
+
+- Forward `EXTERIOR_PORT` and, if used, `EXTERIOR_PORT_HTTPS` from your router to the Docker host for browser access and `/mpd.mp3`.
+- Do not forward `1900/udp` or `5353/udp` through the internet-facing router.
+- Only forward `6600`, `8200`, `1704`, `1705`, or `1780` if you have a specific remote-use case and understand the security implications.
 
 ## Dynamic DNS Updates
 

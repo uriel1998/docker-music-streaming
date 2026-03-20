@@ -42,6 +42,8 @@ EOF
 if [ "${stream_out}" = "true" ]; then
     cat >> /etc/caddy/Caddyfile <<'EOF'
 
+    # Publish the MPD HTTP stream through the same public site as myMPD so the
+    # browser-facing stack only needs the normal HTTP/HTTPS ports.
     handle /mpd.mp3 {
         reverse_proxy app:8000
     }
