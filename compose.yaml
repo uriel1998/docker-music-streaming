@@ -1,0 +1,75 @@
+name: docker-music-streaming
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+    image: docker-music-streaming-app:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DOMAIN: ${DOMAIN}
+      SECDOMAIN: ${SECDOMAIN}
+      UPDATE_URL: ${UPDATE_URL}
+      USE_SNAPCAST: ${USE_SNAPCAST}
+      STREAM_OUT: ${STREAM_OUT}
+      APP_STATE_ROOT: /var/lib/music-stack
+      APP_RUNTIME_ROOT: /run/music-stack
+    ports:
+      - "6600:6600"
+      - "8200:8200/tcp"
+      - "1900:1900/udp"
+      - "1704:1704/tcp"
+      - "1705:1705/tcp"
+      - "1780:1780/tcp"
+      - "5353:5353/udp"
+    volumes:
+      - type: bind
+        source: ${MUSIC_DIRECTORY:-./music}
+        target: /media/music
+      - type: bind
+        source: ./config
+        target: /config
+      - type: volume
+        source: app_state
+        target: /var/lib/music-stack
+      - type: volume
+        source: app_runtime
+        target: /run/music-stack
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - app
+    env_file:
+      - .env
+    ports:
+      - target: 80
+        published: ${EXTERIOR_PORT:-80}
+        protocol: tcp
+      - target: 443
+        published: ${EXTERIOR_PORT_HTTPS:-443}
+        protocol: tcp
+    volumes:
+      - type: bind
+        source: ./docker/caddy/start-caddy.sh
+        target: /etc/caddy/start-caddy.sh
+        read_only: true
+      - type: volume
+        source: caddy_data
+        target: /data
+      - type: volume
+        source: caddy_config
+        target: /config
+    command:
+      - /bin/sh
+      - /etc/caddy/start-caddy.sh
+
+volumes:
+  app_state:
+  app_runtime:
+  caddy_data:
+  caddy_config:
