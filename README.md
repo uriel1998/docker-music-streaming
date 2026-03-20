@@ -215,8 +215,8 @@ This is the case where another machine or container is already handling public H
 DOMAIN=music.internal.example
 SECDOMAIN=
 UPDATE_URL=
-EXTERIOR_PORT=8080
-EXTERIOR_PORT_HTTPS=8443
+EXTERIOR_PORT=38180
+EXTERIOR_PORT_HTTPS=38143
 BEHIND_PROXY=true
 GET_HTTPS_CERTIFICATE=false
 MUSIC_DIRECTORY=/srv/music
@@ -230,7 +230,7 @@ STREAM_OUT=true
 docker compose up -d --build
 ```
 
-3. Make sure nginx can reach the Docker host on `http://docker-host:8080`.
+3. Make sure nginx can reach the Docker host on `http://docker-host:38180`.
 4. Terminate TLS at nginx using your existing Let’s Encrypt setup.
 5. Proxy both the site root and `/mpd.mp3` to the Docker host on the same upstream port.
 
@@ -251,7 +251,7 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/music.example.com/privkey.pem;
 
     location / {
-        proxy_pass http://docker-host:8080;
+        proxy_pass http://docker-host:38180;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto https;
