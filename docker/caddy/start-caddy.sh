@@ -7,11 +7,14 @@ behind_proxy="${BEHIND_PROXY:-false}"
 get_https_certificate="${GET_HTTPS_CERTIFICATE:-true}"
 stream_out="${STREAM_OUT:-true}"
 
+# Include the secondary hostname only for the FreeDNS redirect use case.
 hosts="${domain}"
 if [ -n "${secdomain}" ]; then
     hosts="${hosts} ${secdomain}"
 fi
 
+# Caddy site labels decide whether a host is HTTP-only or eligible for
+# automatic HTTPS. Prefixing with `http://` disables certificate management.
 site_labels=""
 for host in ${hosts}; do
     if [ -n "${site_labels}" ]; then
@@ -25,6 +28,8 @@ for host in ${hosts}; do
     fi
 done
 
+# Build the config at container start so Compose env values remain the single
+# source of truth for routing and certificate behavior.
 cat > /etc/caddy/Caddyfile <<EOF
 {
     auto_https disable_redirects

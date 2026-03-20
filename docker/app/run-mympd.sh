@@ -1,6 +1,7 @@
 #!/bin/sh
 set -eu
 
+# myMPD reads basic networking and MPD connection settings from environment.
 export MPD_HOST="${MPD_HOST:-mycomplicatedpassword@127.0.0.1}"
 export MPD_PORT="${MPD_PORT:-6600}"
 export MYMPD_HTTP_PORT="${MYMPD_HTTP_PORT:-8080}"
@@ -10,6 +11,7 @@ export MYMPD_LOGLEVEL="${MYMPD_LOGLEVEL:-5}"
 
 mkdir -p /var/lib/mympd /var/cache/mympd
 
+# Seed the workdir once so later restarts reuse the same state and defaults.
 if [ ! -d /var/lib/mympd/config ]; then
     mympd -c -w /var/lib/mympd -a /var/cache/mympd >/dev/null 2>&1 || true
 fi

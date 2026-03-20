@@ -3,6 +3,7 @@ set -eu
 
 update_url="${UPDATE_URL:-}"
 
+# Idle cleanly when dynamic DNS updates are not configured.
 if [ -z "${update_url}" ]; then
     exec sleep infinity
 fi
@@ -10,6 +11,8 @@ fi
 safe_domain="$(printf '%s' "${DOMAIN:-freedns}" | tr '/:.?=&' '_')"
 log_file="/tmp/freedns_${safe_domain}.log"
 
+# Install the requested FreeDNS schedule verbatim so the updater keeps working
+# after container restarts without requiring host cron configuration.
 cat > /etc/cron.d/freedns-update <<EOF
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -19,4 +22,5 @@ EOF
 chmod 0644 /etc/cron.d/freedns-update
 touch "${log_file}"
 
+# `cron -f` remains in the foreground for Supervisor.
 exec cron -f

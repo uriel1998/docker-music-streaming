@@ -1,66 +1,146 @@
 # docker-music-streaming
 
-Dockerized whole-house audio stack built around `mpd`, `myMPD`, `snapcast`, `snapweb`, `minidlna`, `mpdscribble`, `avahi`, and `catt`, with Caddy handling the public web entrypoint.
+Containerized music streaming stack built around MPD, myMPD, Snapcast, Snapweb, MiniDLNA, mpdscribble, Avahi, and Caddy.
 
-## What Changed
+## Overview
 
-This repo now targets:
+This project packages a small home-audio stack behind Docker Compose.
 
-- `myMPD` instead of RompR
-- `Caddy` instead of an Apache/PHP web tier
-- `.env`-driven Docker Compose deployment
-- host-mounted configuration under [`config/`](/home/steven/Documents/programming/docker-music-streaming/config)
-- optional automatic HTTPS when the instance is public and not behind another reverse proxy
-- optional FreeDNS dynamic updates from inside the application container
+- `myMPD` provides the main web UI.
+- `MPD` provides playback control and the optional HTTP stream.
+- `Snapcast` and `Snapweb` provide synchronized multi-room playback.
+- `MiniDLNA` exposes the library to DLNA/UPnP clients.
+- `Avahi` advertises local services over mDNS.
+- `mpdscribble` can scrobble playback to Last.fm or compatible services.
+- `Caddy` fronts the web UI and can automatically manage HTTPS certificates.
 
-The older 2022 stack is intentionally left in `1_reference/` as local migration material and is not part of the new tracked deployment.
+The current stack replaces the older Apache/RompR setup. The legacy material remains in `1_reference/` as local migration reference and is intentionally excluded from the tracked deliverable.
 
-## Layout
+## Repository Layout
 
-- [`compose.yaml`](/home/steven/Documents/programming/docker-music-streaming/compose.yaml): primary deployment definition
-- [`docker/app/Dockerfile`](/home/steven/Documents/programming/docker-music-streaming/docker/app/Dockerfile): application image containing MPD, myMPD, minidlna, snapserver, avahi, mpdscribble, and `catt`
-- [`docker/caddy/start-caddy.sh`](/home/steven/Documents/programming/docker-music-streaming/docker/caddy/start-caddy.sh): generates the runtime Caddy config from `.env`
-- [`config/`](/home/steven/Documents/programming/docker-music-streaming/config): user-editable service configs mounted from the host
-- [`build/snapweb/`](/home/steven/Documents/programming/docker-music-streaming/build/snapweb): bundled snapweb assets copied into the image
+- [`compose.yaml`](/home/steven/Documents/programming/docker-music-streaming/compose.yaml): main deployment definition
+- [`docker/app/Dockerfile`](/home/steven/Documents/programming/docker-music-streaming/docker/app/Dockerfile): application image
+- [`docker/app/`](/home/steven/Documents/programming/docker-music-streaming/docker/app): service entrypoint and per-service startup scripts
+- [`docker/caddy/start-caddy.sh`](/home/steven/Documents/programming/docker-music-streaming/docker/caddy/start-caddy.sh): generates the runtime Caddy configuration from environment variables
+- [`config/`](/home/steven/Documents/programming/docker-music-streaming/config): host-managed service configuration files
+- [`music/`](/home/steven/Documents/programming/docker-music-streaming/music): default bind mount target for media
+- [`CHANGELOG.md`](/home/steven/Documents/programming/docker-music-streaming/CHANGELOG.md): implementation log requested in the project instructions
 
-## Environment
+## Requirements
 
-Copy [`.env.example`](/home/steven/Documents/programming/docker-music-streaming/.env.example) to `.env` if needed and adjust the values.
+- Docker Engine
+- Docker Compose
+- A host path containing your music library
+- A public DNS record if you want automatic HTTPS
+- A FreeDNS update URL if you want in-container dynamic DNS updates
 
-Key settings:
+## Configuration
 
-- `DOMAIN`: primary public hostname for the Caddy site
-- `SECDOMAIN`: only set this when using a second FreeDNS A record for web redirection to a non-standard external port
-- `UPDATE_URL`: FreeDNS dynamic-update endpoint; leave blank to disable
-- `EXTERIOR_PORT`: external HTTP port published by Caddy
-- `EXTERIOR_PORT_HTTPS`: external HTTPS port published by Caddy
-- `BEHIND_PROXY=true`: disables Caddy automatic certificate issuance
-- `GET_HTTPS_CERTIFICATE=true`: allows Caddy to obtain certificates when the instance is directly reachable
+Create a local `.env` file based on [`.env.example`](/home/steven/Documents/programming/docker-music-streaming/.env.example).
+
+Important variables:
+
+- `DOMAIN`: primary hostname served by Caddy
+- `SECDOMAIN`: secondary hostname used only for the FreeDNS redirect-to-custom-port case
+- `UPDATE_URL`: FreeDNS update endpoint; leave blank to disable the updater
+- `EXTERIOR_PORT`: published HTTP port for Caddy
+- `EXTERIOR_PORT_HTTPS`: published HTTPS port for Caddy
+- `BEHIND_PROXY`: set to `true` when another reverse proxy or TLS terminator sits in front of Caddy
+- `GET_HTTPS_CERTIFICATE`: set to `true` when Caddy should request certificates itself
 - `MUSIC_DIRECTORY`: host path mounted into `/media/music`
-- `USE_SNAPCAST`: controls whether the snapserver process is started
-- `STREAM_OUT`: controls whether the MPD HTTP stream is exposed through Caddy at `/mpd.mp3`
+- `USE_SNAPCAST`: set to `false` to skip starting Snapcast
+- `STREAM_OUT`: set to `false` to remove the MPD HTTP stream output
 
-`SECDOMAIN` should normally stay blank. Use it only for the FreeDNS web-redirect case where `DOMAIN` is redirected to a second hostname that points at your actual IP and custom port.
+`SECDOMAIN` should normally be blank. It only exists for the FreeDNS redirect workflow where the primary hostname redirects to a second hostname that resolves directly to your IP and custom port.
+
+## Host Configuration
+
+The service configuration files live in [`config/`](/home/steven/Documents/programming/docker-music-streaming/config) and are copied into the container at startup.
+
+- [`config/mpd.conf`](/home/steven/Documents/programming/docker-music-streaming/config/mpd.conf): MPD configuration
+- [`config/minidlna.conf`](/home/steven/Documents/programming/docker-music-streaming/config/minidlna.conf): MiniDLNA configuration
+- [`config/mpdscribble.conf`](/home/steven/Documents/programming/docker-music-streaming/config/mpdscribble.conf): scrobbling configuration
+- [`config/snapserver.conf`](/home/steven/Documents/programming/docker-music-streaming/config/snapserver.conf): Snapcast server configuration
+- [`config/snapserver`](/home/steven/Documents/programming/docker-music-streaming/config/snapserver): extra Snapserver options
+
+Runtime state is stored in Docker volumes so rebuilding the image does not wipe service data.
 
 ## Running
 
-1. Adjust `.env`.
-2. Review the configs in [`config/`](/home/steven/Documents/programming/docker-music-streaming/config).
-3. Put your library at the path referenced by `MUSIC_DIRECTORY`.
-4. Start the stack with `docker compose up -d --build`.
+1. Edit `.env`.
+2. Review the files in [`config/`](/home/steven/Documents/programming/docker-music-streaming/config).
+3. Point `MUSIC_DIRECTORY` at your music library.
+4. Start the stack:
 
-Primary access paths:
+```bash
+docker compose up -d --build
+```
 
-- `http://DOMAIN[:EXTERIOR_PORT]/` or `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/`: myMPD through Caddy
+5. Watch logs if needed:
+
+```bash
+docker compose logs -f
+```
+
+6. Stop the stack:
+
+```bash
+docker compose down
+```
+
+## Access
+
+- `http://DOMAIN[:EXTERIOR_PORT]/`: main web UI through Caddy
+- `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/`: main web UI through Caddy when automatic HTTPS is enabled
 - `http://DOMAIN[:EXTERIOR_PORT]/mpd.mp3`: MPD HTTP stream when `STREAM_OUT=true`
-- `http://host:1780/`: direct snapweb access
+- `http://host:1780/`: direct Snapweb access
 - `host:6600`: direct MPD client access
 - `host:8200`: MiniDLNA
 - `host:1704` and `host:1705`: Snapcast
 
+## Service Model
+
+The deployment uses two containers.
+
+- `app`: Debian-based image running MPD, myMPD, Snapserver, MiniDLNA, Avahi, mpdscribble, and the optional FreeDNS cron updater under Supervisor
+- `caddy`: public-facing reverse proxy for the web UI and optional MPD stream
+
+The Caddy container reads the same `.env` values and generates its runtime config on startup so certificate behavior and hostnames stay aligned with Compose settings.
+
+## HTTPS Behavior
+
+Caddy requests and manages certificates only when both conditions are met:
+
+- `GET_HTTPS_CERTIFICATE=true`
+- `BEHIND_PROXY=false`
+
+If the stack is behind another reverse proxy, set `BEHIND_PROXY=true` so Caddy serves plain HTTP internally and does not attempt ACME validation.
+
+## Dynamic DNS Updates
+
+When `UPDATE_URL` is set, the application container installs a cron entry matching the schedule requested in `INSTRUCTIONS.txt`. Each run appends output to a log file under `/tmp`.
+
+When `UPDATE_URL` is blank, the updater process idles and no cron job is created.
+
 ## Notes
 
-- Automatic HTTPS is only enabled when `GET_HTTPS_CERTIFICATE=true` and `BEHIND_PROXY=false`.
-- The FreeDNS updater is implemented with an in-container cron job using the schedule requested in `INSTRUCTIONS.txt`.
-- `catt` is installed in the application image for ad-hoc casting workflows; it is not a long-running service.
-- Avahi and DLNA discovery inside Docker can vary by host OS and network setup. The stack keeps those services available, but multicast discovery is still more reliable on Linux hosts than on macOS or Windows Docker backends.
+- `catt` is installed in the application image for manual casting workflows; it is not run as a daemon.
+- Avahi and DLNA discovery are more reliable on Linux Docker hosts than on macOS or Windows Docker backends because multicast networking is more direct.
+- The bundled Snapweb assets come from [`build/snapweb/`](/home/steven/Documents/programming/docker-music-streaming/build/snapweb) and are copied into the image during build.
+
+## Verification
+
+The repository currently validates cleanly with:
+
+```bash
+sh -n docker/caddy/start-caddy.sh docker/app/*.sh
+docker compose config
+```
+
+Image build and runtime behavior should still be tested on the target host with:
+
+```bash
+docker compose up -d --build
+docker compose ps
+docker compose logs -f
+```
