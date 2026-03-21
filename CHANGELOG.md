@@ -6,7 +6,7 @@ This file summarizes notable project changes in a human-readable form.
 
 ### Current Release Notes
 
-Compared with the 2022 version, the current project has been refactored from an Apache/RompR-era stack into a myMPD-and-Caddy deployment with a clearer reverse-proxy-first default. The browser-facing surface is now routed through Caddy so `/` goes to myMPD, `/mpd.mp3` goes to the MPD HTTP stream, and `/snapweb` plus its related websocket paths go to Snapweb when Snapcast is enabled. The application image has been retargeted to Debian Trixie, myMPD is installed from the official upstream repository, configuration is driven through a normalized `.env` contract, and legacy artifacts that are no longer used by the active stack have been moved into `1_reference`. Avahi, MiniDLNA, and Snapcast are now toggleable, host Avahi integration is wired in by default on Linux-style hosts, and the README and inline comments have been updated to describe the current behavior rather than the older 2022 design.
+Compared with the 2022 version, the current project has been refactored from an Apache/RompR-era stack into a myMPD-and-Caddy deployment with a clearer reverse-proxy-first default. The browser-facing surface is now routed through Caddy so `/` goes to myMPD, `/mpd.mp3` goes to the MPD HTTP stream, and `/snapweb` plus its related websocket paths go to Snapweb when Snapcast is enabled. The application image has been retargeted to Debian Trixie, myMPD is installed from the official upstream repository, configuration is driven through a normalized `.env` contract, and legacy artifacts that are no longer used by the active stack have been removed from the public repository. Avahi, MiniDLNA, and Snapcast are now toggleable, host Avahi integration is wired in by default on Linux-style hosts, and the README and inline comments have been updated to describe the current behavior rather than the older 2022 design.
 
 ### Changed
 
@@ -44,7 +44,7 @@ Compared with the 2022 version, the current project has been refactored from an 
 ### Repository Cleanup
 
 - Updated `.gitignore` for the current project layout and runtime artifacts.
-- Moved unused Apache-era artifacts and other no-longer-active files into `1_reference/legacy_apache_stack`.
+- Removed unused Apache-era artifacts and other no-longer-active files from the public repository.
 
 ### Documentation
 

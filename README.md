@@ -12,7 +12,7 @@ The short version is this:
 - `mpdscribble` can scrobble if you want it to.
 - `Caddy` is the browser-facing router.
 
-This repository replaces the older Apache/RompR setup. The earlier materials are still in `1_reference/` as local reference artifacts, but the active tracked project is the newer myMPD-and-Caddy stack.
+This repository replaces the older Apache/RompR setup. Older materials from that version were removed from the public repository, and the active tracked project is the newer myMPD-and-Caddy stack.
 
 ## What This Is Trying To Do
 
