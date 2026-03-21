@@ -1,40 +1,68 @@
 # docker-music-streaming
 
-This is a Dockerized home-audio stack for people who want a browser-based control surface, a plain old MPD server, optional whole-house audio, and a setup that does not require hand-assembling five different services every time they rebuild a machine.
+This is a Dockerized home-audio stack for people who want a browser-based control surface, a plain old MPD server, optional whole-house audio, and a setup that does not require hand-assembling a bunch of services every time they move to a new machine.
 
 The short version is this:
 
-- `myMPD` gives you the web interface.
-- `MPD` gives you the music server and the actual stream.
+- `myMPD` gives you the main web interface.
+- `MPD` gives you the music server and the HTTP stream.
 - `Snapcast` and `Snapweb` handle synchronized playback around the house.
-- `MiniDLNA` makes the library visible to DLNA clients.
+- `MiniDLNA` exposes the library to DLNA clients.
 - `Avahi` handles local service discovery.
 - `mpdscribble` can scrobble if you want it to.
-- `Caddy` sits in front and handles the public web side, including HTTPS when that makes sense.
+- `Caddy` is the browser-facing router.
 
-This repository replaces the older Apache/RompR setup. The earlier materials are still in `1_reference/` as local reference artifacts, but the current tracked project is the newer myMPD-and-Caddy stack.
+This repository replaces the older Apache/RompR setup. The earlier materials are still in `1_reference/` as local reference artifacts, but the active tracked project is the newer myMPD-and-Caddy stack.
 
 ## What This Is Trying To Do
 
-The goal here is not to produce the smallest possible container or the most academically pure separation of services. The goal is to get a practical music server up and running with:
+The goal here is not to make the smallest possible image. The goal is to get a practical music server up and running with:
 
 - a host-managed music directory
 - host-managed config files
-- a web UI that works over HTTP or HTTPS
-- an MPD stream available at `/mpd.mp3`
-- optional Snapcast support
-- optional FreeDNS updates
-- enough documentation that you do not have to rediscover how it works six months from now
+- a browser-facing entrypoint that works behind a reverse proxy by default
+- optional direct HTTPS mode when there is no other reverse proxy
+- path-based routing so one Caddy entrypoint serves the UI, the MPD stream, and Snapweb
+- explicit env vars for every extra exposed service port
+
+## Default Behavior
+
+The desired default mode is:
+
+- `BEHIND_PROXY=true`
+- `GET_HTTPS_CERTIFICATE=false`
+- Caddy serves plain HTTP on `EXTERIOR_PORT`
+- some other reverse proxy can sit in front and terminate TLS if you want public HTTPS
+
+In that default mode, Caddy is not trying to obtain certificates. It is just taking traffic that reaches the container on the configured HTTP port and routing it to the correct internal service.
+
+The optional direct-public mode is:
+
+- `BEHIND_PROXY=false`
+- `GET_HTTPS_CERTIFICATE=true`
+- Caddy serves ports `80` and `443`
+- Caddy performs TLS termination itself
+
+## Routing
+
+All browser-facing routing goes through Caddy:
+
+- `/` goes to myMPD
+- `/mpd.mp3` goes to the MPD HTTP stream
+- `/snapweb` goes to Snapweb
+- `/jsonrpc` goes to the Snapweb/Snapcast websocket RPC endpoint
+- `/stream` goes to the Snapweb/Snapcast streaming websocket endpoint
+
+That means the browser only needs one entrypoint, and Caddy fans requests out to the correct internal service.
 
 ## Repository Layout
 
-- [`compose.yaml`](/home/steven/Documents/programming/docker-music-streaming/compose.yaml): the main deployment file
-- [`docker/app/Dockerfile`](/home/steven/Documents/programming/docker-music-streaming/docker/app/Dockerfile): the application image
+- [`compose.yaml`](/home/steven/Documents/programming/docker-music-streaming/compose.yaml): main deployment definition
+- [`docker/app/Dockerfile`](/home/steven/Documents/programming/docker-music-streaming/docker/app/Dockerfile): application image
 - [`docker/app/`](/home/steven/Documents/programming/docker-music-streaming/docker/app): entrypoint and per-service startup scripts
 - [`docker/caddy/start-caddy.sh`](/home/steven/Documents/programming/docker-music-streaming/docker/caddy/start-caddy.sh): generates the runtime Caddy configuration from `.env`
 - [`config/`](/home/steven/Documents/programming/docker-music-streaming/config): host-side configuration files copied into the container at startup
 - [`music/`](/home/steven/Documents/programming/docker-music-streaming/music): default bind mount target for music
-- [`CHANGELOG.md`](/home/steven/Documents/programming/docker-music-streaming/CHANGELOG.md): implementation log
 
 ## What You Need
 
@@ -48,20 +76,29 @@ The goal here is not to produce the smallest possible container or the most acad
 
 Create a local `.env` file based on [`.env.example`](/home/steven/Documents/programming/docker-music-streaming/.env.example).
 
-The important variables are:
+Important core variables:
 
-- `DOMAIN`: the primary hostname served by Caddy
+- `DOMAIN`: the primary hostname associated with the deployment
 - `SECDOMAIN`: only for the FreeDNS redirect-to-custom-port case
 - `UPDATE_URL`: the FreeDNS update endpoint; blank disables the updater
-- `EXTERIOR_PORT`: the public HTTP port published by Caddy
-- `EXTERIOR_PORT_HTTPS`: the public HTTPS port published by Caddy
-- `BEHIND_PROXY`: set this to `true` if some other reverse proxy or TLS terminator sits in front of Caddy
-- `GET_HTTPS_CERTIFICATE`: set this to `true` if Caddy itself should obtain certificates
+- `EXTERIOR_PORT`: the external HTTP port published by Caddy
+- `EXTERIOR_PORT_HTTPS`: the external HTTPS port used only for direct HTTPS mode
+- `BEHIND_PROXY`: defaults to `true`
+- `GET_HTTPS_CERTIFICATE`: defaults to `false`
 - `MUSIC_DIRECTORY`: the host path mounted into `/media/music`
-- `USE_SNAPCAST`: set to `false` if you do not want Snapcast running
-- `USE_AVAHI`: set to `false` if you do not want Avahi running
+- `USE_SNAPCAST`: enables or disables Snapcast and Snapweb routing
+- `USE_AVAHI`: enables or disables Avahi
 - `AVAHI_PUBLISHED_PORT`: host UDP port forwarded to Avahi's internal `5353/udp`
-- `STREAM_OUT`: set to `false` if you do not want the MPD HTTP stream exposed
+- `STREAM_OUT`: enables or disables `/mpd.mp3`
+
+Additional service ports are explicitly enumerated in the env files:
+
+- `MPD_CONTROL_PORT`
+- `MINIDLNA_PORT`
+- `MINIDLNA_DISCOVERY_PORT`
+- `SNAPCAST_STREAM_PORT`
+- `SNAPCAST_CONTROL_PORT`
+- `SNAPWEB_PORT`
 
 `SECDOMAIN` should usually be blank. It only matters for the FreeDNS redirect setup where one hostname redirects to another hostname that points at your real IP and the port you are actually using.
 
@@ -75,7 +112,7 @@ The files in [`config/`](/home/steven/Documents/programming/docker-music-streami
 - [`config/snapserver.conf`](/home/steven/Documents/programming/docker-music-streaming/config/snapserver.conf): Snapcast server configuration
 - [`config/snapserver`](/home/steven/Documents/programming/docker-music-streaming/config/snapserver): additional Snapserver options
 
-Runtime state lives in Docker volumes so that rebuilding the image does not blow away everything the services have learned or cached.
+Runtime state lives in Docker volumes so rebuilding the image does not wipe learned or cached data.
 
 ## Running It
 
@@ -102,68 +139,59 @@ docker compose down
 
 ## Where Things Show Up
 
-- `http://DOMAIN[:EXTERIOR_PORT]/`: the myMPD web UI through Caddy
-- `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/`: the same thing over HTTPS when Caddy is managing certificates
-- `http://DOMAIN[:EXTERIOR_PORT]/mpd.mp3`: the MPD stream when `STREAM_OUT=true`
-- `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/mpd.mp3`: the same stream through HTTPS when enabled
-- `http://host:1780/`: direct Snapweb access
-- `host:6600`: direct MPD client access
-- `host:8200`: MiniDLNA
-- `host:1704` and `host:1705`: Snapcast
+Browser-facing paths through Caddy:
 
-The important bit here is that the MPD stream is not meant to live on some separate public port. It is served on the same public HTTP or HTTPS entrypoint as the web UI, just at `/mpd.mp3`. Internally, Caddy proxies that request to MPD's own stream port.
+- `http://host:EXTERIOR_PORT/`: myMPD in the default reverse-proxy mode
+- `http://host:EXTERIOR_PORT/mpd.mp3`: MPD stream in the default reverse-proxy mode
+- `http://host:EXTERIOR_PORT/snapweb`: Snapweb in the default reverse-proxy mode
+- `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/`: myMPD in direct HTTPS mode
+- `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/mpd.mp3`: MPD stream in direct HTTPS mode
+- `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/snapweb`: Snapweb in direct HTTPS mode
+
+Direct non-browser service ports:
+
+- `host:MPD_CONTROL_PORT`: direct MPD client access
+- `host:MINIDLNA_PORT`: MiniDLNA
+- `host:SNAPCAST_STREAM_PORT` and `host:SNAPCAST_CONTROL_PORT`: Snapcast
+- `host:SNAPWEB_PORT`: direct Snapweb access, if you want it outside the Caddy path routing
 
 ## The Actual Container Model
 
 There are two containers:
 
 - `app`: runs MPD, myMPD, Snapserver, MiniDLNA, Avahi, mpdscribble, and the optional FreeDNS cron updater under Supervisor
-- `caddy`: handles the public web entrypoint and proxies both the UI and `/mpd.mp3`
+- `caddy`: handles the browser-facing entrypoint and routes `/`, `/mpd.mp3`, and `/snapweb`
 
-That means the public web surface stays simple, while the backend services can keep their normal internal ports.
-
-## HTTPS
-
-Caddy only tries to obtain and manage certificates when both of these are true:
-
-- `GET_HTTPS_CERTIFICATE=true`
-- `BEHIND_PROXY=false`
-
-If this stack is sitting behind another reverse proxy, set `BEHIND_PROXY=true`. In that mode Caddy behaves as an internal HTTP service and does not try to do ACME validation.
+That keeps the browser side simple while leaving the native service ports available for clients that need them.
 
 ## Ports To Open And Forward
 
-This is the part people usually wind up having to reconstruct from Compose files and guesswork, so here it is plainly.
+This is the part people usually wind up reconstructing from Compose files, so here it is plainly.
 
-If you want the web UI and the `/mpd.mp3` stream reachable from outside your LAN, the required forwarded ports are:
+Browser-facing ports:
 
-- `EXTERIOR_PORT/tcp`
-- `EXTERIOR_PORT_HTTPS/tcp`, if you are using HTTPS
+- forward `EXTERIOR_PORT/tcp` for the default reverse-proxy mode
+- forward `80/tcp` and `443/tcp` only if you are using the optional direct HTTPS mode
 
-That is enough for the browser-facing side. You do not need to forward a separate stream port for MPD audio.
+Native service ports that exist but usually do not need internet-facing forwarding:
 
-Ports that exist, but usually do not need internet-facing forwarding:
+- `MPD_CONTROL_PORT/tcp`
+- `MINIDLNA_PORT/tcp`
+- `MINIDLNA_DISCOVERY_PORT/udp`
+- `SNAPCAST_STREAM_PORT/tcp`
+- `SNAPCAST_CONTROL_PORT/tcp`
+- `SNAPWEB_PORT/tcp`
+- `AVAHI_PUBLISHED_PORT/udp`
 
-- `6600/tcp`: direct MPD client access
-- `8200/tcp`: MiniDLNA
-- `1704/tcp`: Snapcast audio stream
-- `1705/tcp`: Snapcast control
-- `1780/tcp`: direct Snapweb access
+Usual sane default:
 
-Ports that are for local network discovery and should generally stay on the LAN:
-
-- `1900/udp`: SSDP for DLNA discovery
-- `5353/udp`: mDNS/Avahi discovery
-
-If you are forwarding ports on a home router, the sane default is:
-
-- forward `EXTERIOR_PORT`
-- forward `EXTERIOR_PORT_HTTPS` if you are using HTTPS
+- forward only `EXTERIOR_PORT` when another reverse proxy is in front
+- forward only `80` and `443` when Caddy is doing public TLS itself
 - leave everything else unforwarded unless you have a specific reason not to
 
 ## Dynamic DNS Updates
 
-If `UPDATE_URL` is set, the application container creates the requested FreeDNS cron job and runs it on the schedule specified in the project instructions.
+If `UPDATE_URL` is set, the application container creates the requested FreeDNS cron job and runs it on the configured schedule.
 
 If `UPDATE_URL` is blank, that updater process simply idles and does nothing.
 
@@ -173,48 +201,13 @@ If `UPDATE_URL` is blank, that updater process simply idles and does nothing.
 - The active application image is based on Debian Trixie.
 - `myMPD` is installed from the upstream JCorporation APT repository during image build so the container follows the official Debian packaging path.
 - Avahi can be disabled with `USE_AVAHI=false`, and its published host UDP port can be changed with `AVAHI_PUBLISHED_PORT`.
+- The default deployment assumes another reverse proxy may sit in front of Caddy, so automatic certificate generation is off unless you explicitly enable direct HTTPS mode.
 - Avahi and DLNA discovery tend to behave better on Linux Docker hosts than on macOS or Windows Docker backends.
 - The bundled Snapweb assets are copied from [`build/snapweb/`](/home/steven/Documents/programming/docker-music-streaming/build/snapweb) during the image build.
 
-## Example Setup 1: No Reverse Proxy
+## Example Setup 1: Behind Nginx Reverse Proxy With TLS Termination
 
-This is the straightforward case where this stack is directly exposed to the internet and Caddy handles HTTPS itself.
-
-1. Point your DNS record for `music.example.com` at your public IP.
-2. Set your `.env` values like this:
-
-```dotenv
-DOMAIN=music.example.com
-SECDOMAIN=
-UPDATE_URL=
-EXTERIOR_PORT=80
-EXTERIOR_PORT_HTTPS=443
-BEHIND_PROXY=false
-GET_HTTPS_CERTIFICATE=true
-MUSIC_DIRECTORY=/srv/music
-USE_SNAPCAST=true
-USE_AVAHI=true
-AVAHI_PUBLISHED_PORT=5353
-STREAM_OUT=true
-```
-
-3. Forward router port `80/tcp` to the Docker host.
-4. Forward router port `443/tcp` to the Docker host.
-5. Leave the other ports unforwarded unless you specifically want remote access to MPD, Snapcast, MiniDLNA, or Snapweb.
-6. Start the stack:
-
-```bash
-docker compose up -d --build
-```
-
-7. Open `https://music.example.com/` for the web UI.
-8. Open `https://music.example.com/mpd.mp3` for the MPD stream.
-
-In this mode, Caddy obtains and renews certificates itself because the container is directly reachable on ports `80` and `443`.
-
-## Example Setup 2: Behind Nginx Reverse Proxy With TLS Termination
-
-This is the case where another machine or container is already handling public HTTPS with nginx and Let’s Encrypt, and this stack should stay behind that proxy on plain HTTP.
+This is the desired default case.
 
 1. Set your `.env` values like this:
 
@@ -223,7 +216,7 @@ DOMAIN=music.internal.example
 SECDOMAIN=
 UPDATE_URL=
 EXTERIOR_PORT=38180
-EXTERIOR_PORT_HTTPS=38143
+EXTERIOR_PORT_HTTPS=443
 BEHIND_PROXY=true
 GET_HTTPS_CERTIFICATE=false
 MUSIC_DIRECTORY=/srv/music
@@ -231,6 +224,12 @@ USE_SNAPCAST=true
 USE_AVAHI=false
 AVAHI_PUBLISHED_PORT=39535
 STREAM_OUT=true
+MPD_CONTROL_PORT=6600
+MINIDLNA_PORT=8200
+MINIDLNA_DISCOVERY_PORT=1900
+SNAPCAST_STREAM_PORT=1704
+SNAPCAST_CONTROL_PORT=1705
+SNAPWEB_PORT=1780
 ```
 
 2. Start the stack:
@@ -241,7 +240,10 @@ docker compose up -d --build
 
 3. Make sure nginx can reach the Docker host on `http://docker-host:38180`.
 4. Terminate TLS at nginx using your existing Let’s Encrypt setup.
-5. Proxy both the site root and `/mpd.mp3` to the Docker host on the same upstream port.
+5. Proxy `/`, `/mpd.mp3`, `/snapweb`, `/jsonrpc`, and `/stream` to `http://docker-host:38180`.
+6. Open `https://music.example.com/` for myMPD.
+7. Open `https://music.example.com/mpd.mp3` for the stream.
+8. Open `https://music.example.com/snapweb` for Snapweb.
 
 Example nginx server block:
 
@@ -268,7 +270,44 @@ server {
 }
 ```
 
-6. Open `https://music.example.com/` for the web UI.
-7. Open `https://music.example.com/mpd.mp3` for the MPD stream.
+## Example Setup 2: Direct HTTPS, No Other Reverse Proxy
 
-In this mode, nginx owns the public certificates and TLS negotiation. Caddy stays internal and serves plain HTTP to the reverse proxy.
+This is the optional case where Caddy handles TLS itself.
+
+1. Point your DNS record for `music.example.com` at your public IP.
+2. Set your `.env` values like this:
+
+```dotenv
+DOMAIN=music.example.com
+SECDOMAIN=
+UPDATE_URL=
+EXTERIOR_PORT=80
+EXTERIOR_PORT_HTTPS=443
+BEHIND_PROXY=false
+GET_HTTPS_CERTIFICATE=true
+MUSIC_DIRECTORY=/srv/music
+USE_SNAPCAST=true
+USE_AVAHI=true
+AVAHI_PUBLISHED_PORT=5353
+STREAM_OUT=true
+MPD_CONTROL_PORT=6600
+MINIDLNA_PORT=8200
+MINIDLNA_DISCOVERY_PORT=1900
+SNAPCAST_STREAM_PORT=1704
+SNAPCAST_CONTROL_PORT=1705
+SNAPWEB_PORT=1780
+```
+
+3. Forward router port `80/tcp` to the Docker host.
+4. Forward router port `443/tcp` to the Docker host.
+5. Start the stack:
+
+```bash
+docker compose up -d --build
+```
+
+6. Open `https://music.example.com/` for myMPD.
+7. Open `https://music.example.com/mpd.mp3` for the stream.
+8. Open `https://music.example.com/snapweb` for Snapweb.
+
+In this mode, Caddy obtains and renews certificates itself because the container is directly reachable on ports `80` and `443`.

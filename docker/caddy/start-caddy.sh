@@ -5,6 +5,7 @@ domain="${DOMAIN:?DOMAIN is required}"
 secdomain="${SECDOMAIN:-}"
 behind_proxy="${BEHIND_PROXY:-false}"
 get_https_certificate="${GET_HTTPS_CERTIFICATE:-true}"
+use_snapcast="${USE_SNAPCAST:-true}"
 stream_out="${STREAM_OUT:-true}"
 
 # Include the secondary hostname only for the FreeDNS redirect use case.
@@ -54,6 +55,25 @@ if [ "${stream_out}" = "true" ]; then
     # browser-facing stack only needs the normal HTTP/HTTPS ports.
     handle /mpd.mp3 {
         reverse_proxy app:8000
+    }
+EOF
+fi
+
+if [ "${use_snapcast}" = "true" ]; then
+    cat >> /etc/caddy/Caddyfile <<'EOF'
+
+    # Snapweb itself is mounted under /snapweb, but its websocket endpoints
+    # stay rooted at /jsonrpc and /stream on the same host.
+    handle_path /snapweb* {
+        reverse_proxy app:1780
+    }
+
+    handle /jsonrpc* {
+        reverse_proxy app:1780
+    }
+
+    handle /stream* {
+        reverse_proxy app:1780
     }
 EOF
 fi
