@@ -13,20 +13,28 @@ if [ -n "${secdomain}" ]; then
     hosts="${hosts} ${secdomain}"
 fi
 
-# Caddy site labels decide whether a host is HTTP-only or eligible for
-# automatic HTTPS. Prefixing with `http://` disables certificate management.
+# In direct-public mode we keep host-specific site labels so Caddy can manage
+# certificates for the configured domain names. Behind another reverse proxy we
+# listen on plain HTTP for any host so local testing and proxy health checks do
+# not depend on an exact Host header match.
 site_labels=""
-for host in ${hosts}; do
-    if [ -n "${site_labels}" ]; then
-        site_labels="${site_labels}, "
-    fi
+if [ "${behind_proxy}" = "true" ]; then
+    site_labels=":80"
+else
+    # Caddy site labels decide whether a host is HTTP-only or eligible for
+    # automatic HTTPS. Prefixing with `http://` disables certificate management.
+    for host in ${hosts}; do
+        if [ -n "${site_labels}" ]; then
+            site_labels="${site_labels}, "
+        fi
 
-    if [ "${get_https_certificate}" = "true" ] && [ "${behind_proxy}" != "true" ]; then
-        site_labels="${site_labels}${host}"
-    else
-        site_labels="${site_labels}http://${host}"
-    fi
-done
+        if [ "${get_https_certificate}" = "true" ]; then
+            site_labels="${site_labels}${host}"
+        else
+            site_labels="${site_labels}http://${host}"
+        fi
+    done
+fi
 
 # Build the config at container start so Compose env values remain the single
 # source of truth for routing and certificate behavior.
