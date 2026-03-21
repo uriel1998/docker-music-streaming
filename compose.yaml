@@ -57,7 +57,7 @@ services:
         target: /run/music-stack
 
   caddy:
-    # Public web entrypoint for myMPD and the optional MPD HTTP stream.
+    # Browser-facing router for myMPD, /mpd.mp3, and optional Snapweb paths.
     image: caddy:2
     restart: unless-stopped
     depends_on:

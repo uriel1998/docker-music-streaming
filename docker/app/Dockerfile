@@ -1,7 +1,6 @@
 FROM debian:trixie-slim
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    PIP_BREAK_SYSTEM_PACKAGES=1
+ENV DEBIAN_FRONTEND=noninteractive
 
 # myMPD is installed from the upstream JCorporation repository, following the
 # official Debian instructions, so the image does not depend on the distro
@@ -19,8 +18,7 @@ RUN apt-get update && \
     echo "deb [signed-by=/usr/share/keyrings/jcorporation.github.io.gpg] http://download.opensuse.org/repositories/home:/jcorporation/Debian_${VERSION_ID}/ ./" > /etc/apt/sources.list.d/jcorporation.list && \
     rm -f /tmp/jcorporation.key && \
     apt-get update && \
-    # System packages provide the long-running services; `catt` is installed
-    # from PyPI because it is used as a utility rather than a daemon.
+    # System packages provide the long-running services in the app container.
     apt-get install -y --no-install-recommends \
         avahi-daemon \
         cron \
@@ -32,13 +30,10 @@ RUN apt-get update && \
         mpd \
         mpdscribble \
         mympd \
-        python3 \
-        python3-pip \
         snapserver \
         supervisor \
         tini \
         wget && \
-    pip3 install --no-cache-dir catt && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

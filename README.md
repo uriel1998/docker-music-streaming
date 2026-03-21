@@ -161,8 +161,8 @@ Direct non-browser service ports:
 
 There are two containers:
 
-- `app`: runs MPD, myMPD, Snapserver, MiniDLNA, Avahi, mpdscribble, and the optional FreeDNS cron updater under Supervisor
-- `caddy`: handles the browser-facing entrypoint and routes `/`, `/mpd.mp3`, and `/snapweb`
+- `app`: runs MPD, myMPD, mpdscribble, and the optional Snapcast, MiniDLNA, Avahi, and FreeDNS updater processes under Supervisor
+- `caddy`: handles the browser-facing entrypoint and routes `/`, `/mpd.mp3`, and the optional Snapweb paths
 
 That keeps the browser side simple while leaving the native service ports available for clients that need them.
 
@@ -201,7 +201,6 @@ If `UPDATE_URL` is blank, that updater process simply idles and does nothing.
 
 ## Notes
 
-- `catt` is installed in the application image for manual casting work, not as a long-running service.
 - The active application image is based on Debian Trixie.
 - `myMPD` is installed from the upstream JCorporation APT repository during image build so the container follows the official Debian packaging path.
 - Avahi can be disabled with `USE_AVAHI=false`, and its published host UDP port can be changed with `AVAHI_PUBLISHED_PORT`.
