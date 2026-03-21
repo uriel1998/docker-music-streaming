@@ -59,6 +59,8 @@ The important variables are:
 - `GET_HTTPS_CERTIFICATE`: set this to `true` if Caddy itself should obtain certificates
 - `MUSIC_DIRECTORY`: the host path mounted into `/media/music`
 - `USE_SNAPCAST`: set to `false` if you do not want Snapcast running
+- `USE_AVAHI`: set to `false` if you do not want Avahi running
+- `AVAHI_PUBLISHED_PORT`: host UDP port forwarded to Avahi's internal `5353/udp`
 - `STREAM_OUT`: set to `false` if you do not want the MPD HTTP stream exposed
 
 `SECDOMAIN` should usually be blank. It only matters for the FreeDNS redirect setup where one hostname redirects to another hostname that points at your real IP and the port you are actually using.
@@ -170,6 +172,7 @@ If `UPDATE_URL` is blank, that updater process simply idles and does nothing.
 - `catt` is installed in the application image for manual casting work, not as a long-running service.
 - The active application image is based on Debian Trixie.
 - `myMPD` is installed from the upstream JCorporation APT repository during image build so the container follows the official Debian packaging path.
+- Avahi can be disabled with `USE_AVAHI=false`, and its published host UDP port can be changed with `AVAHI_PUBLISHED_PORT`.
 - Avahi and DLNA discovery tend to behave better on Linux Docker hosts than on macOS or Windows Docker backends.
 - The bundled Snapweb assets are copied from [`build/snapweb/`](/home/steven/Documents/programming/docker-music-streaming/build/snapweb) during the image build.
 
@@ -190,6 +193,8 @@ BEHIND_PROXY=false
 GET_HTTPS_CERTIFICATE=true
 MUSIC_DIRECTORY=/srv/music
 USE_SNAPCAST=true
+USE_AVAHI=true
+AVAHI_PUBLISHED_PORT=5353
 STREAM_OUT=true
 ```
 
@@ -223,6 +228,8 @@ BEHIND_PROXY=true
 GET_HTTPS_CERTIFICATE=false
 MUSIC_DIRECTORY=/srv/music
 USE_SNAPCAST=true
+USE_AVAHI=false
+AVAHI_PUBLISHED_PORT=39535
 STREAM_OUT=true
 ```
 

@@ -15,6 +15,7 @@ services:
       SECDOMAIN: ${SECDOMAIN}
       UPDATE_URL: ${UPDATE_URL}
       USE_SNAPCAST: ${USE_SNAPCAST}
+      USE_AVAHI: ${USE_AVAHI}
       STREAM_OUT: ${STREAM_OUT}
       APP_STATE_ROOT: /var/lib/music-stack
       APP_RUNTIME_ROOT: /run/music-stack
@@ -27,7 +28,7 @@ services:
       - "1704:1704/tcp"
       - "1705:1705/tcp"
       - "1780:1780/tcp"
-      - "5353:5353/udp"
+      - "${AVAHI_PUBLISHED_PORT:-5353}:5353/udp"
     volumes:
       # Music and config are managed from the host; state and runtime data live
       # in named volumes so container rebuilds do not reset the services.
