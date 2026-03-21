@@ -87,7 +87,9 @@ Important core variables:
 - `GET_HTTPS_CERTIFICATE`: defaults to `false`
 - `MUSIC_DIRECTORY`: the host path mounted into `/media/music`
 - `USE_SNAPCAST`: enables or disables Snapcast and Snapweb routing
+- `USE_MINIDLNA`: enables or disables MiniDLNA
 - `USE_AVAHI`: enables or disables Avahi
+- `USE_HOST_AVAHI`: defaults to `true` on Linux-style hosts and prefers talking to the host Avahi daemon over mounted sockets
 - `AVAHI_PUBLISHED_PORT`: host UDP port forwarded to Avahi's internal `5353/udp`
 - `STREAM_OUT`: enables or disables `/mpd.mp3`
 
@@ -189,6 +191,8 @@ Usual sane default:
 - forward only `80` and `443` when Caddy is doing public TLS itself
 - leave everything else unforwarded unless you have a specific reason not to
 
+Within the current single-container app design, `USE_SNAPCAST`, `USE_MINIDLNA`, and `USE_AVAHI` cleanly disable the daemons themselves. Compose still keeps the matching port mappings in place because those mappings belong to the one shared `app` service rather than to separate per-feature containers.
+
 ## Dynamic DNS Updates
 
 If `UPDATE_URL` is set, the application container creates the requested FreeDNS cron job and runs it on the configured schedule.
@@ -201,6 +205,8 @@ If `UPDATE_URL` is blank, that updater process simply idles and does nothing.
 - The active application image is based on Debian Trixie.
 - `myMPD` is installed from the upstream JCorporation APT repository during image build so the container follows the official Debian packaging path.
 - Avahi can be disabled with `USE_AVAHI=false`, and its published host UDP port can be changed with `AVAHI_PUBLISHED_PORT`.
+- MiniDLNA can be disabled with `USE_MINIDLNA=false`.
+- On Linux hosts, `USE_HOST_AVAHI=true` lets the containerized services talk to the host Avahi daemon over mounted D-Bus and Avahi sockets instead of always running a second Avahi daemon internally.
 - The default deployment assumes another reverse proxy may sit in front of Caddy, so automatic certificate generation is off unless you explicitly enable direct HTTPS mode.
 - Avahi and DLNA discovery tend to behave better on Linux Docker hosts than on macOS or Windows Docker backends.
 - The bundled Snapweb assets are copied from [`build/snapweb/`](/home/steven/Documents/programming/docker-music-streaming/build/snapweb) during the image build.
@@ -221,7 +227,9 @@ BEHIND_PROXY=true
 GET_HTTPS_CERTIFICATE=false
 MUSIC_DIRECTORY=/srv/music
 USE_SNAPCAST=true
+USE_MINIDLNA=true
 USE_AVAHI=false
+USE_HOST_AVAHI=true
 AVAHI_PUBLISHED_PORT=39535
 STREAM_OUT=true
 MPD_CONTROL_PORT=6600
@@ -287,7 +295,9 @@ BEHIND_PROXY=false
 GET_HTTPS_CERTIFICATE=true
 MUSIC_DIRECTORY=/srv/music
 USE_SNAPCAST=true
+USE_MINIDLNA=true
 USE_AVAHI=true
+USE_HOST_AVAHI=true
 AVAHI_PUBLISHED_PORT=5353
 STREAM_OUT=true
 MPD_CONTROL_PORT=6600

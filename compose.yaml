@@ -15,7 +15,9 @@ services:
       SECDOMAIN: ${SECDOMAIN}
       UPDATE_URL: ${UPDATE_URL}
       USE_SNAPCAST: ${USE_SNAPCAST}
+      USE_MINIDLNA: ${USE_MINIDLNA}
       USE_AVAHI: ${USE_AVAHI}
+      USE_HOST_AVAHI: ${USE_HOST_AVAHI}
       STREAM_OUT: ${STREAM_OUT}
       APP_STATE_ROOT: /var/lib/music-stack
       APP_RUNTIME_ROOT: /run/music-stack
@@ -38,6 +40,15 @@ services:
       - type: bind
         source: ./config
         target: /config
+      # On Linux hosts, let containerized services talk to the host's Avahi
+      # daemon over the real D-Bus and Avahi sockets instead of always running
+      # a second Avahi daemon inside the container.
+      - type: bind
+        source: /var/run/dbus
+        target: /var/run/dbus
+      - type: bind
+        source: /run/avahi-daemon/socket
+        target: /run/avahi-daemon/socket
       - type: volume
         source: app_state
         target: /var/lib/music-stack

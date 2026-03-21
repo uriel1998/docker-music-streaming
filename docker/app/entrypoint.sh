@@ -45,8 +45,8 @@ link_dir /var/lib/mympd "${APP_STATE_ROOT}/mympd"
 link_dir /var/cache/mympd "${APP_STATE_ROOT}/mympd-cache"
 link_dir /var/lib/snapserver "${APP_STATE_ROOT}/snapserver"
 
-# Avahi expects a system D-Bus daemon, so start one inside the container if the
-# socket does not already exist.
+# Avahi-aware services can use the host daemon when the host D-Bus socket is
+# mounted in. Fall back to an internal D-Bus daemon when that socket is absent.
 if [ ! -S /run/dbus/system_bus_socket ]; then
     dbus-daemon --system --fork --nopidfile
 fi

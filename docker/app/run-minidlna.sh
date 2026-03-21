@@ -1,6 +1,10 @@
 #!/bin/sh
 set -eu
 
+if [ "${USE_MINIDLNA:-true}" != "true" ]; then
+    exec sleep infinity
+fi
+
 # Always prefer the host-managed config when it is present.
 if [ -f /config/minidlna.conf ]; then
     cp /config/minidlna.conf /etc/minidlna.conf
