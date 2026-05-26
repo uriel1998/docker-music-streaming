@@ -31,8 +31,10 @@ mkdir -p \
     "${APP_STATE_ROOT}/mympd-cache" \
     "${APP_STATE_ROOT}/snapserver" \
     "${APP_RUNTIME_ROOT}" \
+    "${APP_RUNTIME_ROOT}/mpd" \
     /config/playlists \
     /media/music \
+    /media \
     /pipe \
     /run/dbus
 
@@ -44,6 +46,7 @@ link_dir /var/cache/mpdscribble "${APP_STATE_ROOT}/mpdscribble"
 link_dir /var/lib/mympd "${APP_STATE_ROOT}/mympd"
 link_dir /var/cache/mympd "${APP_STATE_ROOT}/mympd-cache"
 link_dir /var/lib/snapserver "${APP_STATE_ROOT}/snapserver"
+link_dir /media/playlists /config/playlists
 
 # Avahi-aware services can use the host daemon when the host D-Bus socket is
 # mounted in. Fall back to an internal D-Bus daemon when that socket is absent.

@@ -78,14 +78,16 @@ Create a local `.env` file based on [`.env.example`](/home/steven/Documents/prog
 
 Important core variables:
 
-- `DOMAIN`: the primary hostname associated with the deployment
-- `SECDOMAIN`: only for the FreeDNS redirect-to-custom-port case
+- `MUSICSTACK_DOMAIN`: the primary hostname associated with the deployment
+- `MUSICSTACK_SECDOMAIN`: only for the FreeDNS redirect-to-custom-port case
 - `UPDATE_URL`: the FreeDNS update endpoint; blank disables the updater
 - `EXTERIOR_PORT`: the external HTTP port published by Caddy
 - `EXTERIOR_PORT_HTTPS`: the external HTTPS port used only for direct HTTPS mode
 - `BEHIND_PROXY`: defaults to `true`
 - `GET_HTTPS_CERTIFICATE`: defaults to `false`
-- `MUSIC_DIRECTORY`: the host path mounted into `/media/music`
+- `MUSICSTACK_MUSIC_DIR`: the host path mounted into `/media/music`
+- `MUSICSTACK_MPD_PASSWORD`: the local MPD control password used by MPD and myMPD
+- `MPD_CONNECT_HOST`: the MPD host or socket path myMPD should use; defaults to `/run/music-stack/mpd/socket`
 - `USE_SNAPCAST`: enables or disables Snapcast and Snapweb routing
 - `USE_MINIDLNA`: enables or disables MiniDLNA
 - `USE_AVAHI`: enables or disables Avahi
@@ -102,7 +104,7 @@ Additional service ports are explicitly enumerated in the env files:
 - `SNAPCAST_CONTROL_PORT`
 - `SNAPWEB_PORT`
 
-`SECDOMAIN` should usually be blank. It only matters for the FreeDNS redirect setup where one hostname redirects to another hostname that points at your real IP and the port you are actually using.
+`MUSICSTACK_SECDOMAIN` should usually be blank. It only matters for the FreeDNS redirect setup where one hostname redirects to another hostname that points at your real IP and the port you are actually using.
 
 ## Host-Managed Config Files
 
@@ -120,7 +122,7 @@ Runtime state lives in Docker volumes so rebuilding the image does not wipe lear
 
 1. Edit `.env`.
 2. Review the files in [`config/`](/home/steven/Documents/programming/docker-music-streaming/config).
-3. Point `MUSIC_DIRECTORY` at your music library.
+3. Point `MUSICSTACK_MUSIC_DIR` at your music library.
 4. Build and start the stack.
 
 ```bash
@@ -146,9 +148,9 @@ Browser-facing paths through Caddy:
 - `http://host:EXTERIOR_PORT/`: myMPD in the default reverse-proxy mode
 - `http://host:EXTERIOR_PORT/mpd.mp3`: MPD stream in the default reverse-proxy mode
 - `http://host:EXTERIOR_PORT/snapweb`: Snapweb in the default reverse-proxy mode
-- `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/`: myMPD in direct HTTPS mode
-- `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/mpd.mp3`: MPD stream in direct HTTPS mode
-- `https://DOMAIN[:EXTERIOR_PORT_HTTPS]/snapweb`: Snapweb in direct HTTPS mode
+- `https://MUSICSTACK_DOMAIN[:EXTERIOR_PORT_HTTPS]/`: myMPD in direct HTTPS mode
+- `https://MUSICSTACK_DOMAIN[:EXTERIOR_PORT_HTTPS]/mpd.mp3`: MPD stream in direct HTTPS mode
+- `https://MUSICSTACK_DOMAIN[:EXTERIOR_PORT_HTTPS]/snapweb`: Snapweb in direct HTTPS mode
 
 Direct non-browser service ports:
 
@@ -217,14 +219,16 @@ This is the desired default case.
 1. Set your `.env` values like this:
 
 ```dotenv
-DOMAIN=music.internal.example
-SECDOMAIN=
+MUSICSTACK_DOMAIN=music.internal.example
+MUSICSTACK_SECDOMAIN=
 UPDATE_URL=
 EXTERIOR_PORT=38180
 EXTERIOR_PORT_HTTPS=443
 BEHIND_PROXY=true
 GET_HTTPS_CERTIFICATE=false
-MUSIC_DIRECTORY=/srv/music
+MUSICSTACK_MUSIC_DIR=/srv/music
+MUSICSTACK_MPD_PASSWORD=mycomplicatedpassword
+MPD_CONNECT_HOST=/run/music-stack/mpd/socket
 USE_SNAPCAST=true
 USE_MINIDLNA=true
 USE_AVAHI=false
@@ -285,14 +289,16 @@ This is the optional case where Caddy handles TLS itself.
 2. Set your `.env` values like this:
 
 ```dotenv
-DOMAIN=music.example.com
-SECDOMAIN=
+MUSICSTACK_DOMAIN=music.example.com
+MUSICSTACK_SECDOMAIN=
 UPDATE_URL=
 EXTERIOR_PORT=80
 EXTERIOR_PORT_HTTPS=443
 BEHIND_PROXY=false
 GET_HTTPS_CERTIFICATE=true
-MUSIC_DIRECTORY=/srv/music
+MUSICSTACK_MUSIC_DIR=/srv/music
+MUSICSTACK_MPD_PASSWORD=mycomplicatedpassword
+MPD_CONNECT_HOST=/run/music-stack/mpd/socket
 USE_SNAPCAST=true
 USE_MINIDLNA=true
 USE_AVAHI=true

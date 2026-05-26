@@ -11,8 +11,8 @@ services:
     env_file:
       - .env
     environment:
-      DOMAIN: ${DOMAIN}
-      SECDOMAIN: ${SECDOMAIN}
+      MUSICSTACK_DOMAIN: ${MUSICSTACK_DOMAIN}
+      MUSICSTACK_SECDOMAIN: ${MUSICSTACK_SECDOMAIN}
       UPDATE_URL: ${UPDATE_URL}
       USE_SNAPCAST: ${USE_SNAPCAST}
       USE_MINIDLNA: ${USE_MINIDLNA}
@@ -35,7 +35,7 @@ services:
       # Music and config are managed from the host; state and runtime data live
       # in named volumes so container rebuilds do not reset the services.
       - type: bind
-        source: ${MUSIC_DIRECTORY:-./music}
+        source: ${MUSICSTACK_MUSIC_DIR:-./music}
         target: /media/music
       - type: bind
         source: ./config

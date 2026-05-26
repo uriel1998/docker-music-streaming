@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-domain="${DOMAIN:?DOMAIN is required}"
-secdomain="${SECDOMAIN:-}"
+domain="${MUSICSTACK_DOMAIN:?MUSICSTACK_DOMAIN is required}"
+secdomain="${MUSICSTACK_SECDOMAIN:-}"
 behind_proxy="${BEHIND_PROXY:-false}"
 get_https_certificate="${GET_HTTPS_CERTIFICATE:-true}"
 use_snapcast="${USE_SNAPCAST:-true}"

@@ -4,6 +4,8 @@
 !.env.example
 INSTRUCTIONS.txt
 1_reference/
+.codex
+.agents
 
 # Editor and OS noise
 .DS_Store

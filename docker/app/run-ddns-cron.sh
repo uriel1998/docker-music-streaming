@@ -8,7 +8,7 @@ if [ -z "${update_url}" ]; then
     exec sleep infinity
 fi
 
-safe_domain="$(printf '%s' "${DOMAIN:-freedns}" | tr '/:.?=&' '_')"
+safe_domain="$(printf '%s' "${MUSICSTACK_DOMAIN:-freedns}" | tr '/:.?=&' '_')"
 log_file="/tmp/freedns_${safe_domain}.log"
 
 # Install the requested FreeDNS schedule verbatim so the updater keeps working
