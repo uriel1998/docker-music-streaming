@@ -354,3 +354,71 @@ docker compose up -d --build
 8. Open `https://music.example.com/snapweb` for Snapweb.
 
 In this mode, Caddy obtains and renews certificates itself because the container is directly reachable on ports `80` and `443`.
+
+## Appendix: Second Instance On The Same Machine
+
+You can run a second copy of this stack on the same host and point it at the
+same music library, but it must have its own Compose project name, its own
+state volumes, and its own published ports.
+
+Recommended approach:
+
+1. Copy this repository to a second directory, or run the second stack with a
+   distinct Compose project name such as:
+
+```bash
+docker compose -p musicstack2 up -d --build
+```
+
+2. Point `MUSICSTACK_MUSIC_DIR` at the same host music directory if you want
+   both stacks to index the same library.
+
+3. Change every published port in the second `.env` so it does not collide with
+   the first stack:
+
+- `EXTERIOR_PORT`
+- `EXTERIOR_PORT_HTTPS` if you publish it
+- `MPD_CONTROL_PORT`
+- `MINIDLNA_PORT`
+- `MINIDLNA_DISCOVERY_PORT`
+- `SNAPCAST_STREAM_PORT`
+- `SNAPCAST_CONTROL_PORT`
+- `SNAPWEB_PORT`
+- `AVAHI_PUBLISHED_PORT`
+
+4. Use a different `MUSICSTACK_DOMAIN` if both stacks are meant to be reachable
+   through a reverse proxy or public DNS.
+
+Sharing the same music directory is fine. Each stack keeps its own MPD
+database, stickers, myMPD state, MiniDLNA state, and Snapserver state in its
+own named Docker volumes.
+
+If you do not need discovery or streaming services on the second instance, it
+is often cleaner to disable some of them there with `USE_SNAPCAST=false`,
+`USE_MINIDLNA=false`, or `USE_AVAHI=false`.
+
+## Appendix: Importing A Bare-Metal MPD Sticker Database
+
+This stack keeps MPD state inside the app state volume. Inside the container,
+MPD uses:
+
+- `sticker_file "/var/lib/mpd/sticker.sql"`
+
+That path is symlinked into the named volume mounted at `/var/lib/music-stack`,
+so the persistent host-side target is the volume-backed file at:
+
+- `/var/lib/music-stack/mpd/sticker.sql` inside the `app` container
+
+If you want to import an old bare-metal MPD sticker database, copy your
+existing `sticker.sql` into that path before first startup, or into the running
+container afterward and then restart the app service.
+
+One practical method after the stack exists is:
+
+```bash
+docker compose cp /path/to/old/sticker.sql app:/var/lib/music-stack/mpd/sticker.sql
+docker compose restart app
+```
+
+If you are restoring into a brand-new stack, do it before generating new MPD
+state so the imported sticker database becomes the active one immediately.
