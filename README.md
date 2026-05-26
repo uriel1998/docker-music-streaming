@@ -87,6 +87,8 @@ Important core variables:
 - `GET_HTTPS_CERTIFICATE`: defaults to `false`
 - `MUSICSTACK_MUSIC_DIR`: the host path mounted into `/media/music`
 - `MUSICSTACK_MPD_PASSWORD`: the local MPD control password used by MPD and myMPD
+- `MUSICSTACK_LASTFM_USERNAME` and `MUSICSTACK_LASTFM_PASSWORD`: enable Last.fm scrobbling when both are set
+- `MUSICSTACK_LIBREFM_USERNAME` and `MUSICSTACK_LIBREFM_PASSWORD`: enable Libre.fm scrobbling when both are set
 - `MPD_CONNECT_HOST`: the MPD host or socket path myMPD should use; defaults to `/run/music-stack/mpd/socket`
 - `USE_SNAPCAST`: enables or disables Snapcast and Snapweb routing
 - `USE_MINIDLNA`: enables or disables MiniDLNA
@@ -112,9 +114,6 @@ The files in [`config/`](/home/steven/Documents/programming/docker-music-streami
 
 - [`config/mpd.conf`](/home/steven/Documents/programming/docker-music-streaming/config/mpd.conf): MPD configuration
 - [`config/minidlna.conf`](/home/steven/Documents/programming/docker-music-streaming/config/minidlna.conf): MiniDLNA configuration
-- [`config/mpdscribble.conf`](/home/steven/Documents/programming/docker-music-streaming/config/mpdscribble.conf): scrobbling configuration
-- [`config/snapserver.conf`](/home/steven/Documents/programming/docker-music-streaming/config/snapserver.conf): Snapcast server configuration
-- [`config/snapserver`](/home/steven/Documents/programming/docker-music-streaming/config/snapserver): additional Snapserver options
 
 Runtime state lives in Docker volumes so rebuilding the image does not wipe learned or cached data.
 
@@ -228,6 +227,10 @@ BEHIND_PROXY=true
 GET_HTTPS_CERTIFICATE=false
 MUSICSTACK_MUSIC_DIR=/srv/music
 MUSICSTACK_MPD_PASSWORD=mycomplicatedpassword
+MUSICSTACK_LASTFM_USERNAME=
+MUSICSTACK_LASTFM_PASSWORD=
+MUSICSTACK_LIBREFM_USERNAME=
+MUSICSTACK_LIBREFM_PASSWORD=
 MPD_CONNECT_HOST=/run/music-stack/mpd/socket
 USE_SNAPCAST=true
 USE_MINIDLNA=true
@@ -319,6 +322,10 @@ BEHIND_PROXY=false
 GET_HTTPS_CERTIFICATE=true
 MUSICSTACK_MUSIC_DIR=/srv/music
 MUSICSTACK_MPD_PASSWORD=mycomplicatedpassword
+MUSICSTACK_LASTFM_USERNAME=
+MUSICSTACK_LASTFM_PASSWORD=
+MUSICSTACK_LIBREFM_USERNAME=
+MUSICSTACK_LIBREFM_PASSWORD=
 MPD_CONNECT_HOST=/run/music-stack/mpd/socket
 USE_SNAPCAST=true
 USE_MINIDLNA=true
