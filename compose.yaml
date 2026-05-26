@@ -46,9 +46,13 @@ services:
       - type: bind
         source: /var/run/dbus
         target: /var/run/dbus
+        bind:
+          create_host_path: true
       - type: bind
-        source: /run/avahi-daemon/socket
-        target: /run/avahi-daemon/socket
+        source: /run/avahi-daemon
+        target: /run/avahi-daemon
+        bind:
+          create_host_path: true
       - type: volume
         source: app_state
         target: /var/lib/music-stack

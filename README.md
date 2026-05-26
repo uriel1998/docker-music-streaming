@@ -93,7 +93,7 @@ Important core variables:
 - `USE_SNAPCAST`: enables or disables Snapcast and Snapweb routing
 - `USE_MINIDLNA`: enables or disables MiniDLNA
 - `USE_AVAHI`: enables or disables Avahi
-- `USE_HOST_AVAHI`: defaults to `true` on Linux-style hosts and prefers talking to the host Avahi daemon over mounted sockets
+- `USE_HOST_AVAHI`: defaults to `true` on Linux-style hosts and prefers talking to the host Avahi daemon when its mounted sockets are present
 - `AVAHI_PUBLISHED_PORT`: host UDP port forwarded to Avahi's internal `5353/udp`
 - `STREAM_OUT`: enables or disables `/mpd.mp3`
 
@@ -206,7 +206,7 @@ If `UPDATE_URL` is blank, that updater process simply idles and does nothing.
 - `myMPD` is installed from the upstream JCorporation APT repository during image build so the container follows the official Debian packaging path.
 - Avahi can be disabled with `USE_AVAHI=false`, and its published host UDP port can be changed with `AVAHI_PUBLISHED_PORT`.
 - MiniDLNA can be disabled with `USE_MINIDLNA=false`.
-- On Linux hosts, `USE_HOST_AVAHI=true` lets the containerized services talk to the host Avahi daemon over mounted D-Bus and Avahi sockets instead of always running a second Avahi daemon internally.
+- On Linux hosts, `USE_HOST_AVAHI=true` lets the containerized services talk to the host Avahi daemon over mounted D-Bus and Avahi paths when those sockets are present; otherwise the container falls back to its internal daemon behavior.
 - The default deployment assumes another reverse proxy may sit in front of Caddy, so automatic certificate generation is off unless you explicitly enable direct HTTPS mode.
 - Avahi and DLNA discovery tend to behave better on Linux Docker hosts than on macOS or Windows Docker backends.
 - The bundled Snapweb assets are copied from [`build/snapweb/`](/home/steven/Documents/programming/docker-music-streaming/build/snapweb) during the image build.
