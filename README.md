@@ -259,6 +259,16 @@ docker compose up -d --build
 Example nginx server block:
 
 ```nginx
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
+upstream music_caddy {
+    server docker-host:38180;
+    keepalive 32;
+}
+
 server {
     listen 80;
     server_name music.example.com;
@@ -273,10 +283,21 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/music.example.com/privkey.pem;
 
     location / {
-        proxy_pass http://docker-host:38180;
+        proxy_pass http://music_caddy;
+        proxy_http_version 1.1;
+
         proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header X-Forwarded-Host $host;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+        proxy_buffering off;
     }
 }
 ```
