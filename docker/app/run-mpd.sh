@@ -79,8 +79,8 @@ END {
 mv "${target_conf}.rendered" "${target_conf}"
 
 # MPD expects its state/database files to exist on first boot for this config.
-# Create the configured paths explicitly so a clean volume does not fail before
-# the daemon can initialize its own state.
+# Create missing paths explicitly so a clean volume does not fail before the
+# daemon can initialize its own state, but do not truncate existing data.
 for path_key in db_file state_file sticker_file pid_file; do
     path_value="$(awk -v key="${path_key}" '
         $1 == key {
@@ -93,7 +93,9 @@ for path_key in db_file state_file sticker_file pid_file; do
 
     if [ -n "${path_value}" ]; then
         mkdir -p "$(dirname "${path_value}")"
-        : > "${path_value}"
+        if [ ! -e "${path_value}" ]; then
+            : > "${path_value}"
+        fi
     fi
 done
 

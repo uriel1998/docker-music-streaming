@@ -7,6 +7,8 @@ behind_proxy="${BEHIND_PROXY:-false}"
 get_https_certificate="${GET_HTTPS_CERTIFICATE:-true}"
 use_snapcast="${USE_SNAPCAST:-true}"
 stream_out="${STREAM_OUT:-true}"
+http_basic_user="${MUSICSTACK_HTTP_BASIC_USER:-}"
+http_basic_password_hash="${MUSICSTACK_HTTP_BASIC_PASSWORD_HASH:-}"
 
 # Include the secondary hostname only for the FreeDNS redirect use case.
 hosts="${domain}"
@@ -47,6 +49,16 @@ cat > /etc/caddy/Caddyfile <<EOF
 ${site_labels} {
     encode zstd gzip
 EOF
+
+if [ -n "${http_basic_user}" ] && [ -n "${http_basic_password_hash}" ]; then
+    cat >> /etc/caddy/Caddyfile <<EOF
+
+    # Optional HTTP Basic Auth in front of the browser-facing surface.
+    basic_auth {
+        ${http_basic_user} ${http_basic_password_hash}
+    }
+EOF
+fi
 
 if [ "${stream_out}" = "true" ]; then
     cat >> /etc/caddy/Caddyfile <<'EOF'

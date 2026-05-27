@@ -89,6 +89,7 @@ Important core variables:
 - `MUSICSTACK_MPD_PASSWORD`: the local MPD control password used by MPD and myMPD
 - `MUSICSTACK_LASTFM_USERNAME` and `MUSICSTACK_LASTFM_PASSWORD`: enable Last.fm scrobbling when both are set
 - `MUSICSTACK_LIBREFM_USERNAME` and `MUSICSTACK_LIBREFM_PASSWORD`: enable Libre.fm scrobbling when both are set
+- `MUSICSTACK_HTTP_BASIC_USER` and `MUSICSTACK_HTTP_BASIC_PASSWORD_HASH`: optionally enable Caddy HTTP Basic Auth for the browser-facing site
 - `MPD_CONNECT_HOST`: the MPD host or socket path myMPD should use; defaults to `/run/music-stack/mpd/socket`
 - `USE_SNAPCAST`: enables or disables Snapcast and Snapweb routing
 - `USE_MINIDLNA`: enables or disables MiniDLNA
@@ -231,6 +232,8 @@ MUSICSTACK_LASTFM_USERNAME=
 MUSICSTACK_LASTFM_PASSWORD=
 MUSICSTACK_LIBREFM_USERNAME=
 MUSICSTACK_LIBREFM_PASSWORD=
+MUSICSTACK_HTTP_BASIC_USER=
+MUSICSTACK_HTTP_BASIC_PASSWORD_HASH=
 MPD_CONNECT_HOST=/run/music-stack/mpd/socket
 USE_SNAPCAST=true
 USE_MINIDLNA=true
@@ -326,6 +329,8 @@ MUSICSTACK_LASTFM_USERNAME=
 MUSICSTACK_LASTFM_PASSWORD=
 MUSICSTACK_LIBREFM_USERNAME=
 MUSICSTACK_LIBREFM_PASSWORD=
+MUSICSTACK_HTTP_BASIC_USER=
+MUSICSTACK_HTTP_BASIC_PASSWORD_HASH=
 MPD_CONNECT_HOST=/run/music-stack/mpd/socket
 USE_SNAPCAST=true
 USE_MINIDLNA=true
@@ -354,6 +359,96 @@ docker compose up -d --build
 8. Open `https://music.example.com/snapweb` for Snapweb.
 
 In this mode, Caddy obtains and renews certificates itself because the container is directly reachable on ports `80` and `443`.
+
+## Securing The Web UI
+
+If you want password protection for the browser-facing site without affecting
+native MPD clients, put the protection at the HTTP layer, not in MPD itself.
+That keeps `MPD_CONTROL_PORT` usable for normal MPD clients while protecting
+myMPD, `/mpd.mp3`, and the optional Snapweb routes in the browser.
+
+### Option 1: Caddy Basic Auth
+
+This repository supports optional Caddy HTTP Basic Auth through these `.env`
+variables:
+
+- `MUSICSTACK_HTTP_BASIC_USER`
+- `MUSICSTACK_HTTP_BASIC_PASSWORD_HASH`
+
+If both are set, the generated Caddy config will protect the whole
+browser-facing site.
+
+Caddy requires a hashed password, not plaintext. You can generate a usable hash
+with either:
+
+```bash
+docker run --rm caddy:2 caddy hash-password --plaintext 'your-password'
+```
+
+or a standard system tool such as `htpasswd`:
+
+```bash
+htpasswd -nB youruser | cut -d: -f2
+```
+
+If you want to avoid the interactive password prompt:
+
+```bash
+htpasswd -nbB youruser 'your-password' | cut -d: -f2
+```
+
+Then set, for example:
+
+```dotenv
+MUSICSTACK_HTTP_BASIC_USER=youruser
+MUSICSTACK_HTTP_BASIC_PASSWORD_HASH=$2y$05$...
+```
+
+Programmatic access can then authenticate with normal HTTP Basic Auth headers,
+for example with `curl -u youruser:your-password`.
+
+### Option 2: Nginx Basic Auth
+
+If nginx sits in front of Caddy, you can instead protect the site at nginx and
+leave Caddy unaware of the HTTP auth layer.
+
+Typical nginx location example:
+
+```nginx
+location / {
+    auth_basic "music";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+
+    add_header Cache-Control "no-store, no-cache, must-revalidate" always;
+    add_header Pragma "no-cache" always;
+
+    proxy_pass http://music_caddy;
+    proxy_http_version 1.1;
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-Host $host;
+
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+
+    proxy_read_timeout 86400;
+    proxy_send_timeout 86400;
+    proxy_buffering off;
+}
+```
+
+You can generate the `.htpasswd` entry with:
+
+```bash
+htpasswd -nB youruser
+```
+
+In both approaches, the protection applies only to the HTTP entrypoint. Native
+MPD protocol clients still authenticate against MPD itself using
+`MUSICSTACK_MPD_PASSWORD`.
 
 ## Appendix: Second Instance On The Same Machine
 
@@ -422,3 +517,52 @@ docker compose restart app
 
 If you are restoring into a brand-new stack, do it before generating new MPD
 state so the imported sticker database becomes the active one immediately.
+
+## Appendix: Importing Selected Stickers From A Remote MPD
+
+This repository includes a host-run helper script at
+[`tools/import_remote_stickers.py`](/home/steven/Documents/programming/#music/docker-music-streaming/tools/import_remote_stickers.py:1)
+for copying selected stickers from an older MPD instance into the local Docker
+MPD over the MPD protocol.
+
+The script copies only these sticker names:
+
+- `bpm`
+- `lastPlayed`
+- `lastSkipped`
+- `playCount`
+- `skipCount`
+
+Remote `playcount` is normalized to local `playCount`. If both `playcount` and
+`playCount` exist remotely, the larger value is used and written back only as
+`playCount`.
+
+Basic usage:
+
+```bash
+python3 tools/import_remote_stickers.py 'REMOTE_PASSWORD@remote-mpd-host'
+```
+
+Dry run:
+
+```bash
+python3 tools/import_remote_stickers.py 'REMOTE_PASSWORD@remote-mpd-host' --dry-run
+```
+
+The script reads local defaults from this repository's `.env` file next to
+`compose.yaml`, not from your current working directory:
+
+- `MUSICSTACK_MPD_PASSWORD`
+- `MPD_CONTROL_PORT`
+
+If needed, you can point it at a different env file with `--dotenv /path/to/.env`.
+
+You can see all options with:
+
+```bash
+python3 tools/import_remote_stickers.py --help
+```
+
+This works by talking to both MPD servers directly. It does not edit
+`sticker.sql` files in place, so the local Docker MPD should already be running
+and reachable on `MPD_CONTROL_PORT`.
