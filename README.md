@@ -116,7 +116,7 @@ The files in [`config/`](/home/steven/Documents/programming/docker-music-streami
 - [`config/mpd.conf`](/home/steven/Documents/programming/docker-music-streaming/config/mpd.conf): MPD configuration
 - [`config/minidlna.conf`](/home/steven/Documents/programming/docker-music-streaming/config/minidlna.conf): MiniDLNA configuration
 
-Runtime state lives in Docker volumes so rebuilding the image does not wipe learned or cached data.
+Runtime state lives under [`state/`](/home/steven/Documents/programming/#music/docker-music-streaming/state) on the host so rebuilding the image does not wipe learned or cached data.
 
 ## Running It
 
@@ -140,6 +140,8 @@ If you want to stop it:
 ```bash
 docker compose down
 ```
+
+Persistent app data, including MPD's database and sticker state, will be stored in [`state/`](/home/steven/Documents/programming/#music/docker-music-streaming/state) on the host.
 
 ## Where Things Show Up
 

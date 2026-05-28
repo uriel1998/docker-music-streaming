@@ -20,6 +20,8 @@ tmp/
 logs/
 caddy_data/
 caddy_config/
+state/*
+!state/.gitkeep
 
 # User-provided media and generated playlists
 music/*

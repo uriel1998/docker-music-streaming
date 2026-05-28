@@ -76,6 +76,8 @@ if [ "${use_snapcast}" = "true" ]; then
 
     # Snapweb itself is mounted under /snapweb, but its websocket endpoints
     # stay rooted at /jsonrpc and /stream on the same host.
+    redir /snapweb /snapweb/ 308
+
     handle_path /snapweb* {
         reverse_proxy app:1780
     }

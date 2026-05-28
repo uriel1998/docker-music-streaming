@@ -32,8 +32,8 @@ services:
       - "${SNAPWEB_PORT:-1780}:1780/tcp"
       - "${AVAHI_PUBLISHED_PORT:-5353}:5353/udp"
     volumes:
-      # Music and config are managed from the host; state and runtime data live
-      # in named volumes so container rebuilds do not reset the services.
+      # Music, config, and persistent app state are managed from the host so
+      # service data is visible on disk and survives container recreation.
       - type: bind
         source: ${MUSICSTACK_MUSIC_DIR:-./music}
         target: /media/music
@@ -53,8 +53,8 @@ services:
         target: /run/avahi-daemon
         bind:
           create_host_path: true
-      - type: volume
-        source: app_state
+      - type: bind
+        source: ./state
         target: /var/lib/music-stack
       - type: volume
         source: app_runtime
@@ -93,8 +93,7 @@ services:
       - /etc/caddy/start-caddy.sh
 
 volumes:
-  # Persistent data volumes for service state and Caddy certificate/config data.
-  app_state:
+  # Persistent data volumes for runtime-only state and Caddy certificate/config data.
   app_runtime:
   caddy_data:
   caddy_config:
