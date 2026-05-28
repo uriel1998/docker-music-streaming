@@ -452,6 +452,28 @@ In both approaches, the protection applies only to the HTTP entrypoint. Native
 MPD protocol clients still authenticate against MPD itself using
 `MUSICSTACK_MPD_PASSWORD`.
 
+• If the stream is protected by HTTP Basic Auth from htpasswd, the reliable mpv
+  form is to send the Authorization header explicitly.
+
+  mpv --http-header-fields='Authorization: Basic BASE64_USERPASS'
+  'https://music.example.com/mpd.mp3'
+
+  Generate BASE64_USERPASS from username:password:
+
+  printf '%s' 'username:password' | base64 -w0
+
+  Example:
+
+  mpv --http-header-fields='Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ='
+  'https://music.example.com/mpd.mp3'
+
+  You can also try embedding credentials in the URL:
+
+  mpv 'https://username:password@music.example.com/mpd.mp3'
+
+  but the header method is usually safer, especially if the password has special
+  characters.
+  
 ## Appendix: Second Instance On The Same Machine
 
 You can run a second copy of this stack on the same host and point it at the
