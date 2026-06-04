@@ -25,6 +25,7 @@ services:
       # Native service ports are env-driven so they can be kept at defaults or
       # moved to fit the host environment without editing the compose file.
       - "${MPD_CONTROL_PORT:-6600}:6600"
+      - "${MPD_STREAM_PORT:-8000}:8000"
       - "${MINIDLNA_PORT:-8200}:8200/tcp"
       - "${MINIDLNA_DISCOVERY_PORT:-1900}:1900/udp"
       - "${SNAPCAST_STREAM_PORT:-1704}:1704/tcp"

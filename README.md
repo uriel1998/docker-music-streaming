@@ -101,6 +101,7 @@ Important core variables:
 Additional service ports are explicitly enumerated in the env files:
 
 - `MPD_CONTROL_PORT`
+- `MPD_STREAM_PORT`
 - `MINIDLNA_PORT`
 - `MINIDLNA_DISCOVERY_PORT`
 - `SNAPCAST_STREAM_PORT`
@@ -157,6 +158,7 @@ Browser-facing paths through Caddy:
 Direct non-browser service ports:
 
 - `host:MPD_CONTROL_PORT`: direct MPD client access
+- `host:MPD_STREAM_PORT`: direct MPD HTTP stream access for clients that expect MPD's native `httpd` output on port `8000`
 - `host:MINIDLNA_PORT`: MiniDLNA
 - `host:SNAPCAST_STREAM_PORT` and `host:SNAPCAST_CONTROL_PORT`: Snapcast
 - `host:SNAPWEB_PORT`: direct Snapweb access, if you want it outside the Caddy path routing
@@ -182,6 +184,7 @@ Browser-facing ports:
 Native service ports that exist but usually do not need internet-facing forwarding:
 
 - `MPD_CONTROL_PORT/tcp`
+- `MPD_STREAM_PORT/tcp`
 - `MINIDLNA_PORT/tcp`
 - `MINIDLNA_DISCOVERY_PORT/udp`
 - `SNAPCAST_STREAM_PORT/tcp`
@@ -244,6 +247,7 @@ USE_HOST_AVAHI=true
 AVAHI_PUBLISHED_PORT=39535
 STREAM_OUT=true
 MPD_CONTROL_PORT=6600
+MPD_STREAM_PORT=8000
 MINIDLNA_PORT=8200
 MINIDLNA_DISCOVERY_PORT=1900
 SNAPCAST_STREAM_PORT=1704
@@ -341,6 +345,7 @@ USE_HOST_AVAHI=true
 AVAHI_PUBLISHED_PORT=5353
 STREAM_OUT=true
 MPD_CONTROL_PORT=6600
+MPD_STREAM_PORT=8000
 MINIDLNA_PORT=8200
 MINIDLNA_DISCOVERY_PORT=1900
 SNAPCAST_STREAM_PORT=1704
