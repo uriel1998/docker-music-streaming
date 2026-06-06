@@ -26,6 +26,9 @@ state/*
 # User-provided media and generated playlists
 music/*
 !music/.gitkeep
+!music/Javolenus_-_C95-RoutineMaintenanceMission.mp3
+!music/_ghost_-_Reverie_(small_theme).mp3
+!music/_ghost_-_Two_Swords.mp3
 config/playlists/*
 !config/playlists/.gitkeep
 

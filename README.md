@@ -619,22 +619,6 @@ and reachable on `MPD_CONTROL_PORT`.
 
 The sample music files kept in [`music/`](/home/steven/Documents/programming/#music/docker-music-streaming/music) are attributed from [`1_reference/credit_music.txt`](/home/steven/Documents/programming/#music/docker-music-streaming/1_reference/credit_music.txt).
 
-- `10-The_Theme.mp3`: "The Theme" by echoed. <http://echoedmusic.com/album/echoed-2>. CC BY-NC 3.0.
-- `AlexBeroza_-_Free_Music_Free_Beer.mp3`: "Free Music & Free Beer" by Alex Beroza feat. Admiral Bob. <http://ccmixter.org/files/AlexBeroza/38167>. CC BY 3.0.
-- `Citizen_X0_-_Ghosts_in_the_wind.mp3`: "Ghosts in the wind" by Abstract Audio feat. orang_redux_777. <http://ccmixter.org/files/Citizen_X0/29247>. CC BY 3.0.
-- `djlang59_-_Drops_of_H2O_(_The_Filtered_Water_Treatment_).mp3`: "Drops of H2O ( The Filtered Water Treatment )" by J. Lang feat. Airtone. <http://ccmixter.org/files/djlang59/37792>. CC BY 3.0.
-- `flatwound_-_The_Long_Goodbye.mp3`: "The Long Goodbye" by John Pazdan. <http://ccmixter.org/files/flatwound/14476>. CC BY 2.5.
-- `gurdonark_-_Grasslands.mp3`: "Grasslands" by Gurdonark feat. Vo1k1. <http://ccmixter.org/files/gurdonark/39200>. CC BY 3.0.
-- `gurdonark_-_Sawmill.mp3`: "Sawmill" by Gurdonark. <http://ccmixter.org/files/gurdonark/23358>. CC BY 3.0.
 - `Javolenus_-_C95-RoutineMaintenanceMission.mp3`: "C95-RoutineMaintenanceMission" by Javolenus feat. nickleus. <http://ccmixter.org/files/Javolenus/37693>. CC BY 3.0.
-- `jlbrock44_-_Theatrical_Trailer_(annabloom_vs._Jeris).mp3`: "Theatrical Trailer (annabloom vs. Jeris)" by spinningmerkaba feat. annabloom and Jeris. <http://ccmixter.org/files/jlbrock44/33300>. CC BY 3.0.
-- `jlbrock44_-_Urbana-Metronica_(wooh-yeah_mix).mp3`: "Urbana-Metronica (wooh-yeah mix)" by spinningmerkaba feat. Morusque, Jeris, CSoul, and Alex Beroza. <http://ccmixter.org/files/jlbrock44/33345>. CC BY 3.0.
-- `jlbrock44_-_Winter_Walk_(Silver_Trumpet_Mix).mp3`: "Winter Walk (Silver Trumpet Mix)" by spinningmerkaba feat. donkeyhorsemule. <http://ccmixter.org/files/jlbrock44/35050>. CC BY 3.0.
-- `Karstenholymoly_-_Undercover.mp3`: "Undercover" by Karstenholymoly. <http://dig.ccmixter.org/files/Karstenholymoly/40639>. CC BY 3.0.
-- `Lost Frontier.mp3`: "Lost Frontier" by Kevin MacLeod. <http://creativecommons.org/licenses/by/3.0/>. CC BY 3.0.
-- `PerlssDj_-_Anaerobica.mp3`: "Anaerobica" by PerlssDj. <http://ccmixter.org/files/PerlssDj/12774>. CC Sampling+ 1.0.
-- `psychadelik_pedestrian_-_Cry_Over_You_(black_moon_mix).mp3`: "Cry Over You (black moon mix)" by Psychadelik Pedestrian. <http://ccmixter.org/files/psychadelik_pedestrian/33020>. CC BY-NC 3.0.
-- `scottaltham_-_Never_Heard_a_Rhyme_Like_This_Before.mp3`: "Never Heard a Rhyme Like This Before" by scottaltham. <http://ccmixter.org/files/scottaltham/18619>. CC BY 2.5.
 - `_ghost_-_Reverie_(small_theme).mp3`: "Reverie (small theme)" by _ghost feat. Pitx. <http://ccmixter.org/files/_ghost/25389>. CC BY 3.0.
 - `_ghost_-_Two_Swords.mp3`: "Two Swords" by _ghost feat. rocavaco and redhair. <http://ccmixter.org/files/_ghost/26146>. CC BY 3.0.
-- `_ghost_-_Warm_Ink.mp3`: "Warm Ink" by _ghost. <http://ccmixter.org/files/_ghost/37481>. CC BY 3.0.
