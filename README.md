@@ -94,7 +94,9 @@ Important core variables:
 - `USE_SNAPCAST`: enables or disables Snapcast and Snapweb routing
 - `USE_MINIDLNA`: enables or disables MiniDLNA
 - `USE_AVAHI`: enables or disables Avahi
-- `USE_HOST_AVAHI`: defaults to `true` on Linux-style hosts and prefers talking to the host Avahi daemon when its mounted sockets are present
+- `USE_HOST_AVAHI`: when `true`, the container prefers host Avahi integration if the mounted host sockets are actually present; otherwise it falls back to its internal daemons
+- `HOST_DBUS_DIR`: host directory mounted at `/var/run/dbus`; defaults to a harmless repo-local stub and should only be changed on Linux hosts that want real host D-Bus access
+- `HOST_AVAHI_DIR`: host directory mounted at `/run/avahi-daemon`; defaults to a harmless repo-local stub and should only be changed on Linux hosts that want real host Avahi access
 - `AVAHI_PUBLISHED_PORT`: host UDP port forwarded to Avahi's internal `5353/udp`
 - `STREAM_OUT`: enables or disables `/mpd.mp3`
 
@@ -212,10 +214,23 @@ If `UPDATE_URL` is blank, that updater process simply idles and does nothing.
 - `myMPD` is installed from the upstream JCorporation APT repository during image build so the container follows the official Debian packaging path.
 - Avahi can be disabled with `USE_AVAHI=false`, and its published host UDP port can be changed with `AVAHI_PUBLISHED_PORT`.
 - MiniDLNA can be disabled with `USE_MINIDLNA=false`.
-- On Linux hosts, `USE_HOST_AVAHI=true` lets the containerized services talk to the host Avahi daemon over mounted D-Bus and Avahi paths when those sockets are present; otherwise the container falls back to its internal daemon behavior.
+- On Linux hosts, set `HOST_DBUS_DIR=/var/run/dbus` and `HOST_AVAHI_DIR=/run/avahi-daemon` if you want `USE_HOST_AVAHI=true` to share the real host D-Bus and Avahi sockets. The defaults are repo-local stub directories so macOS and Windows Docker hosts can start cleanly without those Linux-specific paths.
 - The default deployment assumes another reverse proxy may sit in front of Caddy, so automatic certificate generation is off unless you explicitly enable direct HTTPS mode.
 - Avahi and DLNA discovery tend to behave better on Linux Docker hosts than on macOS or Windows Docker backends.
 - The bundled Snapweb assets are copied from [`build/snapweb/`](/home/steven/Documents/programming/docker-music-streaming/build/snapweb) during the image build.
+
+## Appendix: macOS And Windows Cautions
+
+This stack can run on Docker Desktop, and the current defaults now avoid a hard dependency on Linux host socket paths, but some features are still more Linux-host-oriented than macOS- or Windows-specific.
+
+- The `app` service still mounts `/var/run/dbus` and `/run/avahi-daemon` inside the container, but the host-side sources now default to repo-local stub directories instead of Linux runtime paths. On Linux, point `HOST_DBUS_DIR` and `HOST_AVAHI_DIR` at the real host paths if you want host Avahi integration.
+- `USE_HOST_AVAHI=true` only changes behavior when a usable host Avahi socket is actually present in the mounted directory. On macOS or Windows, the default stub mounts simply cause the container to fall back to its internal D-Bus and Avahi daemons.
+- Avahi, Bonjour, mDNS, and DLNA discovery are the least portable parts of the stack. Even when the containers start, Docker Desktop's VM-backed networking can make multicast and broadcast discovery less reliable than on a native Linux Docker host.
+- Direct TCP services are more likely to work than discovery-based ones. In practice, myMPD over HTTP, MPD on `MPD_CONTROL_PORT`, and the direct MPD stream on `MPD_STREAM_PORT` are better bets than relying on automatic network discovery.
+- Large music libraries may scan more slowly on macOS or Windows because the music directory and persistent state are bind-mounted from the host. Docker Desktop routes those through its file-sharing layer, which is usually slower than native Linux filesystem access.
+- If you set `MUSICSTACK_MUSIC_DIR` to an absolute host path, use a path format Docker Desktop accepts and make sure the parent location is shared with Docker. The default relative `./music` path is the safest starting point.
+- Windows users should watch out for CRLF line endings in shell scripts. This repository does not currently force LF checkouts for the startup scripts, and a CRLF checkout can break container startup when `/bin/sh` tries to execute those mounted files.
+- Public port publishing works normally on Docker Desktop, but host-LAN service advertisement is a separate issue. A working `http://host:EXTERIOR_PORT/` or `host:8000` stream does not imply that DLNA or Avahi clients elsewhere on the LAN will discover the service automatically.
 
 ## Example Setup 1: Behind Nginx Reverse Proxy With TLS Termination
 
@@ -244,6 +259,8 @@ USE_SNAPCAST=true
 USE_MINIDLNA=true
 USE_AVAHI=false
 USE_HOST_AVAHI=true
+HOST_DBUS_DIR=/var/run/dbus
+HOST_AVAHI_DIR=/run/avahi-daemon
 AVAHI_PUBLISHED_PORT=39535
 STREAM_OUT=true
 MPD_CONTROL_PORT=6600
@@ -342,6 +359,8 @@ USE_SNAPCAST=true
 USE_MINIDLNA=true
 USE_AVAHI=true
 USE_HOST_AVAHI=true
+HOST_DBUS_DIR=/var/run/dbus
+HOST_AVAHI_DIR=/run/avahi-daemon
 AVAHI_PUBLISHED_PORT=5353
 STREAM_OUT=true
 MPD_CONTROL_PORT=6600

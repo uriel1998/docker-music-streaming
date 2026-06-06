@@ -43,14 +43,16 @@ services:
         target: /config
       # On Linux hosts, let containerized services talk to the host's Avahi
       # daemon over the real D-Bus and Avahi sockets instead of always running
-      # a second Avahi daemon inside the container.
+      # a second Avahi daemon inside the container. The default sources are
+      # harmless repo-local stubs so Docker Desktop does not require Linux host
+      # socket paths to exist.
       - type: bind
-        source: /var/run/dbus
+        source: ${HOST_DBUS_DIR:-./docker/host-stubs/dbus}
         target: /var/run/dbus
         bind:
           create_host_path: true
       - type: bind
-        source: /run/avahi-daemon
+        source: ${HOST_AVAHI_DIR:-./docker/host-stubs/avahi-daemon}
         target: /run/avahi-daemon
         bind:
           create_host_path: true
