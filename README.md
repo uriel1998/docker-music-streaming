@@ -2,7 +2,9 @@
 
 Dockerized home audio stack built around `MPD`, `myMPD`, `Caddy`, and a few optional extras.
 
-If you want a practical music server instead of a tiny one, this is that. The point here is not to win image-size contests. The point is to get a usable setup with a web UI, native MPD access, optional Snapcast, optional DLNA, and host-managed state so you do not have to rebuild the whole thing from scratch every time you move machines.
+If you want a practical music server instead of a tiny one, this is that. The point here is not to win image-size contests. The point is to get a usable setup with a web UI, native MPD access, optional Snapcast, optional DLNA, and host-managed state so you do not have to rebuild the whole thing from scratch every time you move machines.  Also with minimal setup needed (may vary depending on your host OS, though).  
+
+Works well on Linux hosts -- I am currently using it! -- and *should* work on macOS and Windows with Docker Desktop, though I haven't explicitly tested it.  
 
 ## What’s In Here
 
