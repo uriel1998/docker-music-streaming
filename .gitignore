@@ -23,6 +23,19 @@ caddy_config/
 state/*
 !state/.gitkeep
 
+# Repo-owned build and container assets must stay trackable even if broader
+# local ignore rules get added later.
+!/build/
+!/build/snapweb/
+!/build/snapweb/**
+!/docker/
+!/docker/app/
+!/docker/app/**
+!/docker/caddy/
+!/docker/caddy/**
+!/docker/host-stubs/
+!/docker/host-stubs/**
+
 # User-provided media and generated playlists
 music/*
 !music/.gitkeep

@@ -59,9 +59,11 @@ Native service ports stay available too, so regular MPD clients can still talk t
 
 1. Copy [`.env.example`](./.env.example) to `.env`.
 2. Set `MUSICSTACK_MUSIC_DIR` to your library path.
-3. Set `MUSICSTACK_MPD_PASSWORD`.
-4. Review [`config/mpd.conf`](./config/mpd.conf) and [`config/minidlna.conf`](./config/minidlna.conf) if you care about those defaults.
-5. Start it:
+3. Set `MUSICSTACK_MPD_PASSWORD` to a real password. Do not leave the sample value from `.env.example`.
+4. If you want browser HTTP auth, also set `MUSICSTACK_HTTP_BASIC_USER` and `MUSICSTACK_HTTP_BASIC_PASSWORD_HASH`.
+5. If you want scrobbling, set the matching Last.fm or Libre.fm username/password pairs.
+6. Review [`config/mpd.conf`](./config/mpd.conf) and [`config/minidlna.conf`](./config/minidlna.conf) if you care about those defaults.
+7. Start it:
 
 ```bash
 docker compose up -d --build
@@ -79,6 +81,13 @@ If you just want the short version: by default this is meant to sit behind anoth
 ## Configuration
 
 Create `.env` from [`.env.example`](./.env.example). The important variables are:
+
+### Password Settings You Must Decide Explicitly
+
+- `MUSICSTACK_MPD_PASSWORD` should always be set explicitly in `.env`. The sample value in `.env.example` is only a placeholder.
+- `MUSICSTACK_HTTP_BASIC_USER` and `MUSICSTACK_HTTP_BASIC_PASSWORD_HASH` are optional, but if you want browser auth you must set both explicitly in `.env`.
+- `MUSICSTACK_LASTFM_USERNAME` and `MUSICSTACK_LASTFM_PASSWORD` are optional, but must both be set if you want Last.fm scrobbling.
+- `MUSICSTACK_LIBREFM_USERNAME` and `MUSICSTACK_LIBREFM_PASSWORD` are optional, but must both be set if you want Libre.fm scrobbling.
 
 #### Core Site Behavior
 
@@ -366,6 +375,8 @@ Example:
 MUSICSTACK_HTTP_BASIC_USER=youruser
 MUSICSTACK_HTTP_BASIC_PASSWORD_HASH=$2y$05$...
 ```
+
+These values belong in `.env`. Do not put plaintext HTTP passwords in `compose.yaml` or the tracked config files.
 
 ### Option 2: Nginx Basic Auth
 
