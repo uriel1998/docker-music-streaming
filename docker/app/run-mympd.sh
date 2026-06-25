@@ -5,6 +5,7 @@ set -eu
 app_runtime_root="${APP_RUNTIME_ROOT:-/run/music-stack}"
 mpd_password="${MUSICSTACK_MPD_PASSWORD:-mycomplicatedpassword}"
 mpd_connect_host="${MPD_CONNECT_HOST:-${app_runtime_root}/mpd/socket}"
+configured_mpd_host="${MPD_HOST:-}"
 
 export MPD_HOST="${MPD_HOST:-${mpd_password}@${mpd_connect_host}}"
 export MPD_PORT="${MPD_PORT:-6600}"
@@ -19,7 +20,7 @@ mkdir -p /var/lib/mympd /var/cache/mympd
 # If the user has not explicitly pinned a different MPD endpoint, clear the
 # persisted network-host state so myMPD falls back to the local socket and can
 # auto-detect MPD's music directory on startup.
-if [ -z "${MPD_HOST:-}" ]; then
+if [ -z "${configured_mpd_host}" ]; then
     rm -f /var/lib/mympd/state/mpd_host /var/lib/mympd/state/mpd_port
 fi
 
