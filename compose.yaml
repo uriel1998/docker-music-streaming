@@ -39,6 +39,9 @@ services:
         source: ${MUSICSTACK_MUSIC_DIR:-./music}
         target: /media/music
       - type: bind
+        source: ${MUSICSTACK_PLAYLIST_DIR:-./playlists}
+        target: /config/playlists
+      - type: bind
         source: ./config
         target: /config
       # On Linux hosts, let containerized services talk to the host's Avahi

@@ -42,8 +42,8 @@ music/*
 !music/Javolenus_-_C95-RoutineMaintenanceMission.mp3
 !music/_ghost_-_Reverie_(small_theme).mp3
 !music/_ghost_-_Two_Swords.mp3
-config/playlists/*
-!config/playlists/.gitkeep
+playlists/*
+!playlists/.gitkeep
 
 # Python/cache artifacts
 __pycache__/

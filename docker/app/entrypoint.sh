@@ -46,6 +46,9 @@ link_dir /var/cache/mpdscribble "${APP_STATE_ROOT}/mpdscribble"
 link_dir /var/lib/mympd "${APP_STATE_ROOT}/mympd"
 link_dir /var/cache/mympd "${APP_STATE_ROOT}/mympd-cache"
 link_dir /var/lib/snapserver "${APP_STATE_ROOT}/snapserver"
+# MPD expects playlists under /media/playlists, but the host-managed bind
+# mount lands at /config/playlists so it stays easy to manage from the repo
+# root or through a symlinked host directory.
 link_dir /media/playlists /config/playlists
 
 # Avahi-aware services can use the host daemon when the host D-Bus socket is

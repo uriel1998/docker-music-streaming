@@ -59,11 +59,12 @@ Native service ports stay available too, so regular MPD clients can still talk t
 
 1. Copy [`.env.example`](./.env.example) to `.env`.
 2. Set `MUSICSTACK_MUSIC_DIR` to your library path.
-3. Set `MUSICSTACK_MPD_PASSWORD` to a real password. Do not leave the sample value from `.env.example`.
-4. If you want browser HTTP auth, also set `MUSICSTACK_HTTP_BASIC_USER` and `MUSICSTACK_HTTP_BASIC_PASSWORD_HASH`.
-5. If you want scrobbling, set the matching Last.fm or Libre.fm username/password pairs.
-6. Review [`config/mpd.conf`](./config/mpd.conf) and [`config/minidlna.conf`](./config/minidlna.conf) if you care about those defaults.
-7. Start it:
+3. Set `MUSICSTACK_PLAYLIST_DIR` if you want playlists somewhere other than the default `./playlists`.
+4. Set `MUSICSTACK_MPD_PASSWORD` to a real password. Do not leave the sample value from `.env.example`.
+5. If you want browser HTTP auth, also set `MUSICSTACK_HTTP_BASIC_USER` and `MUSICSTACK_HTTP_BASIC_PASSWORD_HASH`.
+6. If you want scrobbling, set the matching Last.fm or Libre.fm username/password pairs.
+7. Review [`config/mpd.conf`](./config/mpd.conf) and [`config/minidlna.conf`](./config/minidlna.conf) if you care about those defaults.
+8. Start it:
 
 ```bash
 docker compose up -d --build
@@ -101,6 +102,7 @@ Create `.env` from [`.env.example`](./.env.example). The important variables are
 ### Music And MPD
 
 - `MUSICSTACK_MUSIC_DIR`: host path mounted at `/media/music`
+- `MUSICSTACK_PLAYLIST_DIR`: host path mounted into the container as the playlist directory; defaults to `./playlists`
 - `MUSICSTACK_MPD_PASSWORD`: MPD control password
 - `MPD_CONNECT_HOST`: what `myMPD` should use to reach MPD; defaults to `/run/music-stack/mpd/socket`
 - `MPD_CONTROL_PORT`: native MPD TCP port
@@ -148,6 +150,7 @@ By default `HOST_DBUS_DIR` and `HOST_AVAHI_DIR` point at harmless repo-local stu
 The host-managed parts are:
 
 - [`music/`](./music) or whatever you set as `MUSICSTACK_MUSIC_DIR`
+- [`playlists/`](./playlists) or whatever you set as `MUSICSTACK_PLAYLIST_DIR`
 - [`config/`](./config) for editable service config
 - [`state/`](./state) for persistent runtime state
 
@@ -160,6 +163,8 @@ Persistent state includes things like:
 - Snapserver state
 
 That means container rebuilds do not wipe your learned state unless you remove `state/` yourself.
+
+Both `MUSICSTACK_MUSIC_DIR` and `MUSICSTACK_PLAYLIST_DIR` can point at normal directories or symlinks on the host. So if `./music` is a symlink to something like `/home/steven/MYMUSIC`, or `./playlists` is a symlink to a different library of saved playlists, Docker will use the resolved target as long as that path is readable on the host.
 
 ## Ports And Access
 
